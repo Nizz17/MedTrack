@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MedTrack — Emergency Medicine Requests</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #07090f; --bg-panel: #0d1220; --bg-card: #111827; --border: #1e2d45;
+  --accent-cyan: #00e5ff; --accent-blue: #2979ff; --accent-warn: #ffab00;
+  --accent-red: #ff1744; --accent-green: #00e676; --accent-orange: #ff6d00;
+  --accent-sale: #e040fb;
+  --text-primary: #e8f4fd; --text-muted: #546e8a; --text-dim: #2d4a6b;
+  --mono: 'Share Tech Mono', monospace; --sans: 'Exo 2', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg-deep); color: var(--text-primary); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,109,0,0.008) 2px, rgba(255,109,0,0.008) 4px); }
+
+/* EMERGENCY PULSE BG */
+.emergency-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,23,68,0.04) 0%, transparent 60%);
+  animation: bg-pulse 3s ease-in-out infinite;
+}
+@keyframes bg-pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+header { display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 64px; background: var(--bg-panel); border-bottom: 1px solid rgba(255,109,0,0.3); position: sticky; top: 0; z-index: 100; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent-orange), var(--accent-red)); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display: flex; align-items: center; justify-content: center; font-size: 16px; animation: mark-pulse 1.5s infinite; }
+@keyframes mark-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,109,0,0.4); } 50% { box-shadow: 0 0 0 8px rgba(255,109,0,0); } }
+.logo-text { font-size: 1.3rem; font-weight: 900; letter-spacing: 3px; color: var(--accent-orange); }
+.logo-sub { font-size: 0.6rem; letter-spacing: 4px; color: var(--text-muted); }
+.header-right { display: flex; align-items: center; gap: 1.5rem; }
+.live-dot { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 0.75rem; color: var(--accent-red); }
+.live-dot::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-red); animation: pulse-dot 1s infinite; }
+@keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(255,23,68,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,23,68,0); } 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0); } }
+.clock { font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); }
+
+.nav-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; gap: 0; overflow-x: auto; position: relative; z-index: 10; }
+.nav-link { display: flex; align-items: center; gap: 8px; padding: 0 1.4rem; height: 46px; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 2px; color: var(--text-muted); text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+.nav-link:hover { color: var(--accent-cyan); }
+.nav-link.active { color: var(--accent-orange); border-bottom-color: var(--accent-orange); }
+.nav-badge { font-size: 0.55rem; padding: 1px 6px; border-radius: 10px; font-family: var(--sans); font-weight: 700; }
+.nav-badge.sale { background: var(--accent-sale); color: #fff; }
+.nav-badge.emergency { background: var(--accent-orange); color: #fff; animation: flash 1s infinite; }
+@keyframes flash { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+main { padding: 2rem; max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+.section-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 4px; color: var(--accent-orange); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* === CRITICAL HEADER === */
+.critical-header {
+  background: linear-gradient(135deg, rgba(255,23,68,0.1), rgba(255,109,0,0.08));
+  border: 1px solid rgba(255,109,0,0.4); border-radius: 6px;
+  padding: 1.5rem 2rem; margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 2rem;
+  animation: critical-pulse 2s ease-in-out infinite;
+}
+@keyframes critical-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,109,0,0.15); } 50% { box-shadow: 0 0 0 12px rgba(255,109,0,0); } }
+.critical-header-icon { font-size: 3.5rem; }
+.critical-header-text { flex: 1; }
+.critical-title { font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; color: var(--accent-orange); margin-bottom: 0.4rem; }
+.critical-sub { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; max-width: 600px; }
+.critical-stats { display: flex; gap: 2rem; }
+.critical-stat { text-align: center; }
+.critical-stat-val { font-family: var(--mono); font-size: 2rem; font-weight: 700; color: var(--accent-red); }
+.critical-stat-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--text-muted); }
+
+/* === LIVE REQUESTS === */
+.requests-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 2.5rem; }
+.request-card {
+  background: var(--bg-card); border-radius: 6px; padding: 1.5rem;
+  position: relative; overflow: hidden; transition: all 0.3s;
+  border: 1px solid rgba(255,23,68,0.25);
+  animation: cardIn 0.4s ease both;
+}
+.request-card.critical { border-color: rgba(255,23,68,0.5); }
+.request-card.urgent { border-color: rgba(255,109,0,0.5); }
+@keyframes cardIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+.request-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,23,68,0.12); }
+.request-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.request-card.critical::before { background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); animation: scan-line 2s linear infinite; }
+.request-card.urgent::before { background: var(--accent-orange); }
+@keyframes scan-line { 0% { background-position: -100% 0; } 100% { background-position: 100% 0; } }
+.req-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+.req-drug { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
+.req-priority {
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 1px;
+  padding: 4px 10px; border-radius: 2px;
+}
+.req-priority.critical { background: rgba(255,23,68,0.15); color: var(--accent-red); border: 1px solid rgba(255,23,68,0.3); }
+.req-priority.urgent { background: rgba(255,109,0,0.15); color: var(--accent-orange); border: 1px solid rgba(255,109,0,0.3); }
+.req-hospital { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; font-family: var(--mono); }
+.req-info-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.req-info-item { background: rgba(255,255,255,0.03); border-radius: 3px; padding: 8px 12px; flex: 1; min-width: 100px; }
+.req-info-label { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 3px; }
+.req-info-val { font-family: var(--mono); font-size: 0.85rem; }
+.req-info-val.red { color: var(--accent-red); font-weight: 700; }
+.req-info-val.orange { color: var(--accent-orange); }
+.req-info-val.green { color: var(--accent-green); }
+.countdown-wrap { margin-bottom: 1rem; }
+.countdown-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.countdown-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.countdown-fill { height: 100%; border-radius: 3px; transition: width 1s linear; }
+.countdown-fill.red { background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); }
+.countdown-fill.orange { background: var(--accent-orange); }
+.req-notify-list { margin-bottom: 1rem; }
+.req-notify-title { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px; }
+.clinic-notify-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-family: var(--mono); font-size: 0.72rem; }
+.clinic-status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.clinic-status-dot.notified { background: var(--accent-orange); animation: pulse-dot 1s infinite; }
+.clinic-status-dot.accepted { background: var(--accent-green); }
+.clinic-status-dot.pending { background: var(--text-dim); }
+.req-actions { display: flex; gap: 0.5rem; }
+.btn-accept {
+  flex: 1; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px;
+  padding: 10px; border-radius: 2px; cursor: pointer;
+  background: var(--accent-green); color: #000; border: none;
+  font-weight: 700; transition: opacity 0.2s;
+}
+.btn-accept:hover { opacity: 0.85; }
+.btn-decline {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px;
+  padding: 10px 14px; border-radius: 2px; cursor: pointer;
+  background: transparent; color: var(--text-muted); border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.btn-decline:hover { border-color: var(--accent-red); color: var(--accent-red); }
+.btn-details {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px;
+  padding: 10px 14px; border-radius: 2px; cursor: pointer;
+  background: transparent; color: var(--accent-orange); border: 1px solid rgba(255,109,0,0.3);
+  transition: all 0.2s;
+}
+.btn-details:hover { background: rgba(255,109,0,0.1); }
+
+/* === POST EMERGENCY FORM === */
+.emergency-form-section { background: var(--bg-card); border: 1px solid rgba(255,109,0,0.3); border-radius: 6px; padding: 2rem; margin-bottom: 2.5rem; }
+.form-title { font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 0.4rem; color: var(--accent-orange); }
+.form-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--text-muted); }
+.form-input, .form-select, .form-textarea {
+  background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-primary);
+  font-family: var(--mono); font-size: 0.8rem; padding: 10px 12px; border-radius: 2px;
+  outline: none; transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent-orange); }
+.form-select { appearance: none; cursor: pointer; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-full { grid-column: 1 / -1; }
+.notify-preview {
+  background: rgba(255,109,0,0.06); border: 1px solid rgba(255,109,0,0.2);
+  border-radius: 4px; padding: 1rem; margin-bottom: 1rem;
+}
+.notify-preview-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; color: var(--accent-orange); margin-bottom: 0.6rem; }
+.notify-preview-clinics { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.notify-clinic-chip { font-family: var(--mono); font-size: 0.65rem; padding: 4px 12px; border-radius: 2px; background: rgba(255,109,0,0.1); border: 1px solid rgba(255,109,0,0.25); color: var(--accent-orange); }
+.btn-post-emergency {
+  font-family: var(--mono); font-size: 0.8rem; letter-spacing: 2px;
+  padding: 14px 32px; border-radius: 2px; cursor: pointer;
+  background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); color: #fff; border: none;
+  font-weight: 900; transition: opacity 0.2s;
+  animation: btn-glow 2s ease-in-out infinite;
+}
+@keyframes btn-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(255,23,68,0.3); } 50% { box-shadow: 0 0 20px rgba(255,23,68,0.4); } }
+.btn-post-emergency:hover { opacity: 0.9; }
+
+/* === FULFILLED SECTION === */
+.fulfilled-list { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.fulfilled-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid rgba(30,45,69,0.5); }
+.fulfilled-item:last-child { border-bottom: none; }
+.fulfilled-icon { font-size: 1.4rem; }
+.fulfilled-body { flex: 1; }
+.fulfilled-drug { font-size: 0.85rem; font-weight: 600; }
+.fulfilled-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+.fulfilled-time { font-family: var(--mono); font-size: 0.65rem; color: var(--accent-green); }
+.fulfilled-badge { font-family: var(--mono); font-size: 0.6rem; padding: 3px 10px; border-radius: 2px; background: rgba(0,230,118,0.1); color: var(--accent-green); border: 1px solid rgba(0,230,118,0.25); }
+
+/* === TOAST === */
+#emergencyToast {
+  position: fixed; top: 80px; right: 2rem; z-index: 500;
+  background: linear-gradient(135deg, rgba(255,23,68,0.9), rgba(255,109,0,0.9));
+  border-radius: 4px; padding: 1rem 1.5rem;
+  display: none; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 0.75rem; color: #fff; font-weight: 700;
+  animation: slideDown 0.3s ease;
+  box-shadow: 0 8px 32px rgba(255,23,68,0.3);
+}
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+@media (max-width: 900px) { .requests-grid { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr 1fr; } .critical-stats { display: none; } }
+@media (max-width: 600px) { main { padding: 1rem; } .form-grid { grid-template-columns: 1fr; } .critical-header { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<div class="emergency-bg"></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">🚨</div>
+    <div>
+      <div class="logo-text">EMERGENCY REQUESTS</div>
+      <div class="logo-sub">MEDTRACK / CRITICAL MEDICINE DISPATCH</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-dot">CRITICAL LIVE</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <a href="index.html" class="nav-link">🏠 DASHBOARD</a>
+  <a href="marketplace.html" class="nav-link">🛒 MARKETPLACE</a>
+  <a href="orders.html" class="nav-link">📋 ORDERS</a>
+  <a href="near-expiry.html" class="nav-link">🏷️ EXPIRY SALES <span class="nav-badge sale">NEW</span></a>
+  <a href="emergency.html" class="nav-link active">🚨 EMERGENCY <span class="nav-badge emergency" id="emergencyCount">2</span></a>
+  <a href="qrgen.html" class="nav-link">📱 QR GEN</a>
+  <a href="scanner.html" class="nav-link">🔍 SCANNER</a>
+</nav>
+
+<main>
+
+  <!-- CRITICAL HEADER -->
+  <div class="critical-header">
+    <div class="critical-header-icon">🚨</div>
+    <div class="critical-header-text">
+      <div class="critical-title">⚡ CRITICAL MEDICINE DISPATCH SYSTEM</div>
+      <div class="critical-sub">Hospitals post urgent medicine requests needed within 2–3 hours. The nearest 3 clinics are instantly notified via alerts. First clinic to accept begins delivery — making lives matter.</div>
+    </div>
+    <div class="critical-stats">
+      <div class="critical-stat"><div class="critical-stat-val" id="activeCount">2</div><div class="critical-stat-label">ACTIVE</div></div>
+      <div class="critical-stat"><div class="critical-stat-val" style="color:var(--accent-green)" id="fulfilledCount">7</div><div class="critical-stat-label">FULFILLED TODAY</div></div>
+      <div class="critical-stat"><div class="critical-stat-val" style="color:var(--accent-orange)">~45<span style="font-size:1rem">min</span></div><div class="critical-stat-label">AVG RESPONSE</div></div>
+    </div>
+  </div>
+
+  <!-- LIVE REQUESTS -->
+  <div class="section-label">// 01 &nbsp; LIVE CRITICAL REQUESTS — NEAREST CLINICS NOTIFIED</div>
+  <div class="requests-grid" id="requestsGrid">
+    <!-- populated by JS -->
+  </div>
+
+  <!-- POST EMERGENCY FORM (for hospitals) -->
+  <div class="section-label">// 02 &nbsp; HOSPITAL PORTAL — POST EMERGENCY REQUEST</div>
+  <div class="emergency-form-section">
+    <div class="form-title">🏥 POST CRITICAL MEDICINE NEED</div>
+    <div class="form-desc">Submit an emergency request for medicines needed within 2–3 hours. The 3 nearest clinics will be instantly notified with your location and requirements.</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">MEDICINE / DRUG NAME</label>
+        <input type="text" class="form-input" id="e-drug" placeholder="e.g. Dopamine Injection">
+      </div>
+      <div class="form-group">
+        <label class="form-label">HOSPITAL NAME</label>
+        <input type="text" class="form-input" id="e-hospital" placeholder="e.g. AIIMS, New Delhi">
+      </div>
+      <div class="form-group">
+        <label class="form-label">QUANTITY NEEDED</label>
+        <input type="text" class="form-input" id="e-qty" placeholder="e.g. 50 vials / 200 tablets">
+      </div>
+      <div class="form-group">
+        <label class="form-label">NEEDED WITHIN</label>
+        <select class="form-select" id="e-time">
+          <option value="1">1 Hour — CRITICAL</option>
+          <option value="2" selected>2 Hours — URGENT</option>
+          <option value="3">3 Hours — HIGH PRIORITY</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">PRIORITY LEVEL</label>
+        <select class="form-select" id="e-priority">
+          <option value="critical">🔴 CRITICAL — Life Threatening</option>
+          <option value="urgent">🟠 URGENT — ICU / Surgery</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">CONTACT PERSON</label>
+        <input type="text" class="form-input" id="e-contact" placeholder="Dr. Name / Staff ID">
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">ADDITIONAL NOTES (OPTIONAL)</label>
+        <textarea class="form-textarea" id="e-notes" placeholder="Any specific brand, formulation, dosage notes or patient details..."></textarea>
+      </div>
+    </div>
+    <div class="notify-preview">
+      <div class="notify-preview-title">📡 CLINICS THAT WILL BE INSTANTLY NOTIFIED (NEAREST 3)</div>
+      <div class="notify-preview-clinics">
+        <div class="notify-clinic-chip">🏪 Apollo Pharmacy — 0.8km</div>
+        <div class="notify-clinic-chip">🏪 MedPlus Store — 1.2km</div>
+        <div class="notify-clinic-chip">🏪 Fortis Pharmacy — 2.1km</div>
+      </div>
+    </div>
+    <button class="btn-post-emergency" onclick="postEmergency()">🚨 POST EMERGENCY REQUEST — NOTIFY CLINICS NOW</button>
+  </div>
+
+  <!-- FULFILLED TODAY -->
+  <div class="section-label">// 03 &nbsp; FULFILLED TODAY — LIVES SAVED</div>
+  <div class="fulfilled-list" id="fulfilledList">
+    <!-- populated by JS -->
+  </div>
+
+</main>
+
+<div id="emergencyToast">🚨 <span id="toastMsg">New critical request posted!</span></div>
+
+<script>
+// Clock
+setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN', { hour12: false }); }, 1000);
+
+let emergencyRequests = [
+  {
+    id: 1, drug: 'DOPAMINE INJECTION', hospital: 'AIIMS, NEW DELHI', qty: '20 vials (200mg/5ml)',
+    priority: 'critical', timeNeeded: 1, postedAt: minutesAgo(12),
+    notes: 'ICU patient — cardiac arrest support',
+    notifiedClinics: [
+      { name: 'Apollo Pharmacy', dist: '0.8km', status: 'accepted' },
+      { name: 'MedPlus, Ansari Nagar', dist: '1.2km', status: 'notified' },
+      { name: 'Fortis Pharmacy', dist: '2.1km', status: 'notified' },
+    ]
+  },
+  {
+    id: 2, drug: 'NORADRENALINE 8MG', hospital: 'MAX SUPER SPECIALITY, SAKET', qty: '10 ampoules',
+    priority: 'urgent', timeNeeded: 2, postedAt: minutesAgo(28),
+    notes: 'Post-surgery patient — vasopressor needed',
+    notifiedClinics: [
+      { name: 'Max Pharmacy', dist: '0.3km', status: 'accepted' },
+      { name: 'Apollo Pharmacy, Saket', dist: '0.9km', status: 'notified' },
+      { name: 'MedPlus, Malviya Nagar', dist: '1.5km', status: 'pending' },
+    ]
+  }
+];
+
+let fulfilledRequests = [
+  { drug: 'INSULIN GLARGINE 100IU', hospital: 'SAFDARJUNG HOSPITAL', clinic: 'Apollo Pharmacy', time: '38 min', ago: '2h ago' },
+  { drug: 'MAGNESIUM SULFATE INJECTION', hospital: 'GTB HOSPITAL', clinic: 'MedPlus, Dilshad Garden', time: '52 min', ago: '4h ago' },
+  { drug: 'ATROPINE SULFATE 0.6MG', hospital: 'RML HOSPITAL', clinic: 'Fortis Pharmacy', time: '29 min', ago: '5h ago' },
+  { drug: 'POTASSIUM CHLORIDE 10MEQ', hospital: 'LNJP HOSPITAL', clinic: 'Jan Aushadhi Centre', time: '44 min', ago: '6h ago' },
+  { drug: 'MANNITOL 20% IV', hospital: 'DDU HOSPITAL', clinic: 'Apollo Pharmacy', time: '61 min', ago: '7h ago' },
+];
+
+// Countdown timers: store deadline timestamps
+const deadlines = {};
+emergencyRequests.forEach(r => {
+  const posted = new Date(Date.now() - (Date.now() - r.postedAt));
+  deadlines[r.id] = r.postedAt + r.timeNeeded * 60 * 60 * 1000;
+});
+
+function minutesAgo(m) { return Date.now() - m * 60 * 1000; }
+
+function timeLeft(deadline) {
+  const diff = deadline - Date.now();
+  if (diff <= 0) return { text: 'OVERDUE', pct: 0 };
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return { text: `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`, pct: Math.min(100, diff / (emergencyRequests.find(r => deadlines[r.id] === deadline)?.timeNeeded * 3600000) * 100) };
+}
+
+function renderRequests() {
+  const grid = document.getElementById('requestsGrid');
+  if (!emergencyRequests.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);font-family:var(--mono);font-size:0.8rem">✅ NO ACTIVE EMERGENCY REQUESTS</div>`;
+    return;
+  }
+  grid.innerHTML = emergencyRequests.map((r, i) => {
+    const tl = timeLeft(deadlines[r.id]);
+    const barClass = tl.pct < 30 ? 'red' : 'orange';
+    const statusColor = r.priority === 'critical' ? 'var(--accent-red)' : 'var(--accent-orange)';
+    const notifyHtml = r.notifiedClinics.map(c => `
+      <div class="clinic-notify-item">
+        <div class="clinic-status-dot ${c.status}"></div>
+        <span style="color:${c.status==='accepted'?'var(--accent-green)':c.status==='notified'?'var(--accent-orange)':'var(--text-dim)'}">${c.name}</span>
+        <span style="color:var(--text-dim);margin-left:auto">${c.dist}</span>
+        <span style="color:${c.status==='accepted'?'var(--accent-green)':'var(--text-muted)'};">${c.status.toUpperCase()}</span>
+      </div>`).join('');
+    return `<div class="request-card ${r.priority}" style="animation-delay:${i*0.1}s">
+      <div class="req-header">
+        <div class="req-drug">${r.drug}</div>
+        <div class="req-priority ${r.priority}">${r.priority === 'critical' ? '🔴 CRITICAL' : '🟠 URGENT'}</div>
+      </div>
+      <div class="req-hospital">🏥 ${r.hospital}</div>
+      <div class="req-info-row">
+        <div class="req-info-item"><div class="req-info-label">QUANTITY</div><div class="req-info-val orange">${r.qty}</div></div>
+        <div class="req-info-item"><div class="req-info-label">POSTED</div><div class="req-info-val">${Math.floor((Date.now()-r.postedAt)/60000)}m ago</div></div>
+        <div class="req-info-item"><div class="req-info-label">DEADLINE</div><div class="req-info-val red" id="timer-${r.id}">${tl.text}</div></div>
+      </div>
+      ${r.notes ? `<div style="background:rgba(255,109,0,0.06);border:1px solid rgba(255,109,0,0.15);border-radius:3px;padding:8px 12px;margin-bottom:1rem;font-size:0.75rem;color:var(--text-muted);font-family:var(--mono)">📋 ${r.notes}</div>` : ''}
+      <div class="countdown-wrap">
+        <div class="countdown-label"><span>TIME REMAINING</span><span style="color:${tl.pct<30?'var(--accent-red)':'var(--accent-orange)'}">${r.timeNeeded}H WINDOW</span></div>
+        <div class="countdown-bar"><div class="countdown-fill ${barClass}" id="bar-${r.id}" style="width:${tl.pct}%"></div></div>
+      </div>
+      <div class="req-notify-list">
+        <div class="req-notify-title">📡 NOTIFIED CLINICS</div>
+        ${notifyHtml}
+      </div>
+      <div class="req-actions">
+        <button class="btn-accept" onclick="acceptRequest(${r.id})">✅ ACCEPT & DISPATCH</button>
+        <button class="btn-details" onclick="alert('Drug: ${r.drug}\\nHospital: ${r.hospital}\\nQty: ${r.qty}\\nNotes: ${r.notes || 'N/A'}')">📋 DETAILS</button>
+        <button class="btn-decline" onclick="declineRequest(${r.id})">✗</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFulfilled() {
+  const list = document.getElementById('fulfilledList');
+  list.innerHTML = fulfilledRequests.map(r => `
+    <div class="fulfilled-item">
+      <div class="fulfilled-icon">✅</div>
+      <div class="fulfilled-body">
+        <div class="fulfilled-drug">${r.drug}</div>
+        <div class="fulfilled-meta">${r.hospital} ← ${r.clinic}</div>
+      </div>
+      <div class="fulfilled-time">⚡ ${r.time} delivery</div>
+      <div style="margin-left:0.5rem;font-family:var(--mono);font-size:0.65rem;color:var(--text-dim)">${r.ago}</div>
+      <div class="fulfilled-badge" style="margin-left:0.5rem">FULFILLED</div>
+    </div>`).join('');
+}
+
+function acceptRequest(id) {
+  const req = emergencyRequests.find(r => r.id === id);
+  if (!req) return;
+  fulfilledRequests.unshift({ drug: req.drug, hospital: req.hospital, clinic: 'You (Accepted)', time: 'In progress', ago: 'just now' });
+  emergencyRequests = emergencyRequests.filter(r => r.id !== id);
+  document.getElementById('activeCount').textContent = emergencyRequests.length;
+  document.getElementById('fulfilledCount').textContent = fulfilledRequests.length;
+  document.getElementById('emergencyCount').textContent = emergencyRequests.length;
+  renderRequests();
+  renderFulfilled();
+  showToast('✅ Request accepted! Begin delivery immediately.');
+}
+
+function declineRequest(id) {
+  emergencyRequests = emergencyRequests.filter(r => r.id !== id);
+  document.getElementById('activeCount').textContent = emergencyRequests.length;
+  document.getElementById('emergencyCount').textContent = emergencyRequests.length;
+  renderRequests();
+  showToast('Request declined. Next nearest clinic notified.');
+}
+
+function postEmergency() {
+  const drug = document.getElementById('e-drug').value.trim();
+  const hospital = document.getElementById('e-hospital').value.trim();
+  const qty = document.getElementById('e-qty').value.trim();
+  const time = parseInt(document.getElementById('e-time').value);
+  const priority = document.getElementById('e-priority').value;
+  const contact = document.getElementById('e-contact').value.trim();
+  const notes = document.getElementById('e-notes').value.trim();
+
+  if (!drug || !hospital || !qty || !contact) { alert('Please fill all required fields before posting.'); return; }
+
+  const newReq = {
+    id: Date.now(), drug: drug.toUpperCase(), hospital: hospital.toUpperCase(), qty,
+    priority, timeNeeded: time, postedAt: Date.now(), notes,
+    notifiedClinics: [
+      { name: 'Apollo Pharmacy', dist: '0.8km', status: 'notified' },
+      { name: 'MedPlus', dist: '1.2km', status: 'notified' },
+      { name: 'Nearby Clinic', dist: '2.0km', status: 'pending' },
+    ]
+  };
+  deadlines[newReq.id] = Date.now() + time * 3600000;
+  emergencyRequests.unshift(newReq);
+  document.getElementById('activeCount').textContent = emergencyRequests.length;
+  document.getElementById('emergencyCount').textContent = emergencyRequests.length;
+  renderRequests();
+  showToast(`🚨 Emergency posted! 3 nearest clinics notified for ${drug}`);
+  ['e-drug','e-hospital','e-qty','e-contact','e-notes'].forEach(id => document.getElementById(id).value = '');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('emergencyToast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.style.display = 'flex';
+  setTimeout(() => { toast.style.display = 'none'; }, 4000);
+}
+
+// Live countdown timer
+setInterval(() => {
+  emergencyRequests.forEach(r => {
+    const tl = timeLeft(deadlines[r.id]);
+    const timerEl = document.getElementById(`timer-${r.id}`);
+    const barEl = document.getElementById(`bar-${r.id}`);
+    if (timerEl) timerEl.textContent = tl.text;
+    if (barEl) barEl.style.width = tl.pct + '%';
+  });
+}, 1000);
+
+// Initial render
+renderRequests();
+renderFulfilled();
+</script>
+</body>
+</html>

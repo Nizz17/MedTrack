@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MedTrack — My Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#07090f;--panel:#0d1220;--card:#111827;--border:#1e2d45;
+      --cyan:#00e5ff;--blue:#2979ff;--green:#00e676;--red:#ff1744;
+      --warn:#ffab00;--muted:#546e8a;--mono:'Share Tech Mono',monospace;
+      --sans:'Exo 2',sans-serif;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:#e8f4fd;font-family:var(--sans);min-height:100vh;}
+    nav{display:flex;align-items:center;justify-content:space-between;
+      padding:0 2rem;height:64px;background:var(--panel);
+      border-bottom:1px solid var(--border);}
+    .logo-text{font-size:1.2rem;font-weight:900;letter-spacing:3px;color:var(--cyan);}
+    .nav-links{display:flex;gap:1.5rem;}
+    .nav-link{font-family:var(--mono);font-size:0.65rem;letter-spacing:2px;
+      color:var(--muted);text-decoration:none;}
+    .nav-link:hover,.nav-link.active{color:var(--cyan);}
+    main{padding:2rem;max-width:900px;margin:0 auto;}
+    .section-label{font-family:var(--mono);font-size:0.65rem;letter-spacing:4px;
+      color:var(--cyan);margin-bottom:1.5rem;display:flex;align-items:center;gap:10px;}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    .order-card{background:var(--card);border:1px solid var(--border);
+      border-radius:4px;padding:1.5rem;margin-bottom:1.2rem;
+      animation:fadeUp 0.4s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    .order-top{display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:1.2rem;flex-wrap:wrap;gap:8px;}
+    .order-id{font-family:var(--mono);font-size:0.75rem;color:var(--cyan);}
+    .order-date{font-family:var(--mono);font-size:0.65rem;color:var(--muted);}
+    .order-total{font-family:var(--mono);font-size:0.9rem;color:var(--cyan);font-weight:700;}
+
+    /* PIPELINE */
+    .pipeline{display:flex;align-items:center;margin:1.2rem 0;}
+    .p-step{flex:1;text-align:center;}
+    .p-node{width:40px;height:40px;border-radius:50%;border:2px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1rem;margin:0 auto 6px;background:var(--panel);transition:all 0.4s;}
+    .p-step.done .p-node{border-color:var(--green);background:rgba(0,230,118,0.08);}
+    .p-step.active .p-node{border-color:var(--cyan);background:rgba(0,229,255,0.1);
+      box-shadow:0 0 14px rgba(0,229,255,0.3);}
+    .p-label{font-family:var(--mono);font-size:0.55rem;letter-spacing:2px;color:var(--muted);}
+    .p-step.active .p-label{color:var(--cyan);}
+    .p-step.done  .p-label{color:var(--green);}
+    .p-line{flex:0 0 32px;height:2px;background:var(--border);
+      position:relative;top:-14px;transition:background 0.4s;}
+    .p-line.done{background:var(--green);}
+
+    .order-items{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+    .item-row{display:flex;justify-content:space-between;
+      font-size:0.75rem;padding:4px 0;font-family:var(--mono);}
+    .item-name{color:var(--muted);}
+    .item-val{color:#e8f4fd;}
+
+    /* Admin: advance status */
+    .advance-btn{font-family:var(--mono);font-size:0.6rem;letter-spacing:1px;
+      padding:5px 12px;border:1px solid var(--blue);color:var(--blue);
+      background:transparent;border-radius:2px;cursor:pointer;margin-top:1rem;
+      transition:all 0.2s;}
+    .advance-btn:hover{background:var(--blue);color:#fff;}
+
+    #cfgBanner{position:fixed;bottom:0;left:0;right:0;
+      background:rgba(13,18,32,0.95);border-top:1px solid var(--blue);
+      padding:12px 2rem;display:flex;align-items:center;gap:1rem;z-index:400;}
+    .cfg-input{font-family:var(--mono);font-size:0.7rem;padding:6px 10px;
+      background:var(--card);border:1px solid var(--border);
+      color:#e8f4fd;border-radius:2px;width:180px;}
+    .cfgbtn{font-family:var(--mono);font-size:0.65rem;padding:7px 14px;
+      border:1px solid var(--cyan);color:var(--cyan);
+      background:transparent;border-radius:2px;cursor:pointer;}
+    .cfgbtn:hover{background:var(--cyan);color:#000;}
+    .demobtn{font-family:var(--mono);font-size:0.65rem;padding:7px 14px;
+      border:1px solid var(--warn);color:var(--warn);
+      background:transparent;border-radius:2px;cursor:pointer;}
+    .empty{text-align:center;padding:4rem;font-family:var(--mono);
+      font-size:0.75rem;color:var(--muted);letter-spacing:2px;}
+  </style>
+</head>
+<body>
+<nav>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="width:34px;height:34px;background:linear-gradient(135deg,#00e5ff,#2979ff);
+      clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+      display:flex;align-items:center;justify-content:center;
+      font-family:var(--mono);font-size:11px;color:#000;font-weight:bold;">MT</div>
+    <div class="logo-text">MEDTRACK</div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">DASHBOARD</a>
+    <a href="marketplace.html" class="nav-link">MARKETPLACE</a>
+    <a href="orders.html" class="nav-link active">MY ORDERS</a>
+    <a href="scanner.html" class="nav-link">QR SCAN</a>
+  </div>
+</nav>
+
+<main>
+  <div class="section-label">// MY ORDERS & LIVE TRACKING</div>
+  <div id="ordersContainer">
+    <div class="empty">CONNECT FIREBASE TO VIEW YOUR ORDERS...</div>
+  </div>
+</main>
+
+<div id="cfgBanner">
+  <span style="color:var(--muted);font-size:0.78rem;flex:1"><strong style="color:var(--cyan)">Connect Firebase</strong> to load orders.</span>
+  <input class="cfg-input" id="o-apiKey" placeholder="API Key"/>
+  <input class="cfg-input" id="o-projectId" placeholder="Project ID"/>
+  <button class="cfgbtn" onclick="connectFB()">CONNECT</button>
+  <button class="demobtn" onclick="loadDemo()">DEMO</button>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc, orderBy, query }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  let db = null;
+  const STAGES = ['CONFIRMED','DISPATCHED','IN TRANSIT','OUT FOR DELIVERY','DELIVERED'];
+
+  window.connectFB = async () => {
+    const apiKey    = document.getElementById('o-apiKey').value.trim();
+    const projectId = document.getElementById('o-projectId').value.trim();
+    if (!apiKey||!projectId){alert('Enter credentials');return;}
+    const app = initializeApp({apiKey,projectId,authDomain:`${projectId}.firebaseapp.com`},'orders-'+Date.now());
+    db = getFirestore(app);
+    document.getElementById('cfgBanner').style.display='none';
+    await loadOrders();
+  };
+
+  async function loadOrders() {
+    try {
+      const snap = await getDocs(collection(db,'ORDERS'));
+      const orders = snap.docs.map(d=>({docId:d.id,...d.data()}));
+      renderOrders(orders);
+    } catch(e) {
+      document.getElementById('ordersContainer').innerHTML=
+        `<div class="empty">ERROR: ${e.message}<br>Check Firestore rules.</div>`;
+    }
+  }
+
+  window.loadDemo = () => {
+    document.getElementById('cfgBanner').style.display='none';
+    renderOrders([
+      { docId:'demo1', orderId:'ORD-1714456001000', status:'IN TRANSIT',
+        total:4200, placedAt:{seconds:Date.now()/1000-86400},
+        items:[{name:'INSULIN',qty:6000,unitCost:0.70},{name:'AMOXICILLIN',qty:1200,unitCost:0.15}]},
+      { docId:'demo2', orderId:'ORD-1714456002000', status:'DELIVERED',
+        total:150, placedAt:{seconds:Date.now()/1000-172800},
+        items:[{name:'PARACETAMOL',qty:5000,unitCost:0.02},{name:'METFORMIN',qty:800,unitCost:0.05}]},
+    ]);
+  };
+
+  function renderOrders(orders) {
+    const el = document.getElementById('ordersContainer');
+    if (!orders.length){el.innerHTML='<div class="empty">NO ORDERS FOUND</div>';return;}
+    el.innerHTML = orders.map((o,i) => {
+      const stageIdx = STAGES.indexOf(o.status||'CONFIRMED');
+      const pipeline = STAGES.map((s,si) => {
+        const icons = ['📋','📦','🚚','🏍️','🏥'];
+        const cls = si < stageIdx ? 'done' : si === stageIdx ? 'active' : '';
+        const lineCls = si < stageIdx ? 'done' : '';
+        return `
+          <div class="p-step ${cls}">
+            <div class="p-node">${icons[si]}</div>
+            <div class="p-label">${s.replace(' ','<br/>')}</div>
+          </div>
+          ${si<STAGES.length-1?`<div class="p-line ${lineCls}"></div>`:''}`;
+      }).join('');
+
+      const itemsHtml = (o.items||[]).map(it=>
+        `<div class="item-row">
+          <span class="item-name">${it.name} × ${(it.qty||0).toLocaleString()}</span>
+          <span class="item-val">₹${((it.qty||0)*(it.unitCost||0)).toFixed(2)}</span>
+        </div>`).join('');
+
+      const date = o.placedAt?.seconds
+        ? new Date(o.placedAt.seconds*1000).toLocaleDateString('en-IN')
+        : 'RECENT';
+
+      const nextStage = STAGES[stageIdx+1];
+
+      return `<div class="order-card" style="animation-delay:${i*0.08}s">
+        <div class="order-top">
+          <div>
+            <div class="order-id">${o.orderId||o.docId}</div>
+            <div class="order-date">Placed: ${date}</div>
+          </div>
+          <div class="order-total">₹${(o.total||0).toFixed(2)}</div>
+        </div>
+        <div class="pipeline">${pipeline}</div>
+        <div class="order-items">${itemsHtml}</div>
+        ${nextStage&&db?`<button class="advance-btn" onclick="advanceOrder('${o.docId}','${nextStage}')">
+          ADVANCE → ${nextStage}
+        </button>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  window.advanceOrder = async (docId, nextStatus) => {
+    if (!db) return;
+    await updateDoc(doc(db,'ORDERS',docId),{status:nextStatus});
+    await loadOrders();
+  };
+</script>
+</body>
+</html>

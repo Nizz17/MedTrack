@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MedTrack — Drug Inventory & Supply Chain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-deep:     #07090f;
+      --bg-panel:    #0d1220;
+      --bg-card:     #111827;
+      --border:      #1e2d45;
+      --accent-cyan: #00e5ff;
+      --accent-blue: #2979ff;
+      --accent-warn: #ffab00;
+      --accent-red:  #ff1744;
+      --accent-green:#00e676;
+      --text-primary:#e8f4fd;
+      --text-muted:  #546e8a;
+      --text-dim:    #2d4a6b;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Exo 2', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* === SCANLINE OVERLAY === */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,229,255,0.015) 2px,
+        rgba(0,229,255,0.015) 4px
+      );
+    }
+
+    /* === HEADER === */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 64px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 13px; font-weight: bold;
+      color: #000;
+      flex-shrink: 0;
+    }
+    .logo-text { font-size: 1.3rem; font-weight: 900; letter-spacing: 3px; color: var(--accent-cyan); }
+    .logo-sub  { font-size: 0.6rem; letter-spacing: 4px; color: var(--text-muted); font-weight: 300; }
+
+    .header-right {
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .live-dot {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 0.75rem; color: var(--accent-green);
+    }
+    .live-dot::before {
+      content: '';
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 0 0 var(--accent-green);
+      animation: pulse-dot 1.5s infinite;
+    }
+    @keyframes pulse-dot {
+      0%   { box-shadow: 0 0 0 0 rgba(0,230,118,0.7); }
+      70%  { box-shadow: 0 0 0 8px rgba(0,230,118,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
+    }
+    .clock {
+      font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted);
+    }
+
+    .header-breadcrumb {
+      font-size: 0.7rem; letter-spacing: 2px; color: var(--text-muted);
+    }
+    .header-breadcrumb span { color: var(--accent-cyan); }
+
+    /* === MAIN LAYOUT === */
+    main { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+    /* === SECTION LABEL === */
+    .section-label {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 4px;
+      color: var(--accent-cyan); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ===========================
+       SECTION 1: SUMMARY CARDS
+    =========================== */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.5rem 1.8rem;
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      animation: fadeSlideUp 0.5s ease both;
+    }
+    .stat-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.2s; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+    .stat-card.cyan::before  { background: var(--accent-cyan); }
+    .stat-card.blue::before  { background: var(--accent-blue); }
+    .stat-card.red::before   { background: var(--accent-red);  }
+
+    .stat-glyph {
+      font-size: 1.5rem; margin-bottom: 0.8rem; opacity: 0.7;
+    }
+    .stat-label {
+      font-size: 0.65rem; letter-spacing: 3px; color: var(--text-muted);
+      text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+    .stat-value {
+      font-family: var(--mono); font-size: 3rem; line-height: 1;
+      font-weight: 700; color: var(--text-primary);
+    }
+    .stat-card.red .stat-value   { color: var(--accent-red); }
+    .stat-card.cyan .stat-value  { color: var(--accent-cyan); }
+    .stat-card.blue .stat-value  { color: var(--accent-blue); }
+
+    .stat-sub {
+      font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;
+      font-family: var(--mono);
+    }
+    .stat-corner-decor {
+      position: absolute; bottom: 12px; right: 16px;
+      font-family: var(--mono); font-size: 0.6rem; color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+
+    /* ===========================
+       SECTION 2: INVENTORY TABLE
+    =========================== */
+    .table-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 2.5rem;
+      overflow: hidden;
+      animation: fadeSlideUp 0.5s 0.3s ease both;
+    }
+
+    .table-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,229,255,0.03);
+    }
+    .table-title {
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 2px;
+      color: var(--text-primary);
+    }
+    .table-actions { display: flex; gap: 0.5rem; }
+    .pill-btn {
+      font-family: var(--mono); font-size: 0.65rem;
+      padding: 4px 12px; border-radius: 2px; cursor: pointer;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-muted); letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    .pill-btn:hover, .pill-btn.active {
+      border-color: var(--accent-cyan); color: var(--accent-cyan);
+    }
+
+    table {
+      width: 100%; border-collapse: collapse;
+    }
+    thead th {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 3px;
+      color: var(--text-muted); text-transform: uppercase;
+      padding: 0.8rem 1.2rem; text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(30,45,69,0.5);
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: rgba(0,229,255,0.04); }
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 1rem 1.2rem;
+      font-size: 0.85rem;
+    }
+    .td-mono { font-family: var(--mono); font-size: 0.8rem; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 0.65rem;
+      padding: 3px 10px; border-radius: 2px;
+      letter-spacing: 1px; font-weight: 600;
+    }
+    .badge::before { content: '●'; font-size: 8px; }
+    .badge.safe     { color: var(--accent-green); background: rgba(0,230,118,0.1);  border: 1px solid rgba(0,230,118,0.25);  }
+    .badge.warning  { color: var(--accent-warn);  background: rgba(255,171,0,0.1);  border: 1px solid rgba(255,171,0,0.25);  }
+    .badge.critical { color: var(--accent-red);   background: rgba(255,23,68,0.1);  border: 1px solid rgba(255,23,68,0.25);  font-weight: 900; }
+    .badge.transit  { color: var(--accent-blue);  background: rgba(41,121,255,0.1); border: 1px solid rgba(41,121,255,0.25); }
+
+    .temp-val {
+      font-family: var(--mono); font-size: 0.85rem;
+    }
+    .temp-ok   { color: var(--accent-green); }
+    .temp-warn { color: var(--accent-warn); }
+    .temp-hot  { color: var(--accent-red); font-weight: 700; }
+
+    .loading-row td {
+      text-align: center; padding: 3rem;
+      color: var(--text-muted); font-family: var(--mono); font-size: 0.8rem;
+      letter-spacing: 3px;
+    }
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 12px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===========================
+       SECTION 3: STATUS TIMELINE
+    =========================== */
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      animation: fadeSlideUp 0.5s 0.4s ease both;
+    }
+
+    .timeline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px; padding: 1.5rem;
+    }
+    .timeline-card-title {
+      font-size: 0.7rem; letter-spacing: 3px; color: var(--text-muted);
+      text-transform: uppercase; margin-bottom: 1.5rem;
+    }
+
+    /* Batch selector */
+    .batch-select-wrap { margin-bottom: 1.5rem; }
+    .batch-select-wrap label {
+      font-family: var(--mono); font-size: 0.65rem;
+      letter-spacing: 2px; color: var(--text-muted); display: block; margin-bottom: 6px;
+    }
+    select#batchSelect {
+      width: 100%; background: var(--bg-panel);
+      border: 1px solid var(--border); color: var(--text-primary);
+      font-family: var(--mono); font-size: 0.8rem;
+      padding: 8px 12px; border-radius: 2px; cursor: pointer;
+      appearance: none;
+    }
+    select#batchSelect:focus { outline: none; border-color: var(--accent-cyan); }
+
+    /* Timeline nodes */
+    .pipeline {
+      display: flex; align-items: center; gap: 0; position: relative;
+    }
+    .pipeline-step {
+      flex: 1; text-align: center; position: relative;
+    }
+    .pipeline-step-node {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin: 0 auto 8px;
+      background: var(--bg-panel);
+      transition: all 0.4s;
+    }
+    .pipeline-step.active .pipeline-step-node {
+      border-color: var(--accent-cyan);
+      background: rgba(0,229,255,0.1);
+      box-shadow: 0 0 16px rgba(0,229,255,0.3);
+    }
+    .pipeline-step.done .pipeline-step-node {
+      border-color: var(--accent-green);
+      background: rgba(0,230,118,0.08);
+    }
+    .pipeline-step-label {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 2px; color: var(--text-muted);
+    }
+    .pipeline-step.active .pipeline-step-label { color: var(--accent-cyan); }
+    .pipeline-step.done  .pipeline-step-label  { color: var(--accent-green); }
+
+    .pipeline-connector {
+      flex: 0 0 40px; height: 2px;
+      background: var(--border);
+      position: relative; top: -14px;
+      transition: background 0.4s;
+    }
+    .pipeline-connector.done { background: var(--accent-green); }
+
+    /* Batch detail */
+    .batch-detail {
+      margin-top: 1.5rem; padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .batch-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0;
+      font-size: 0.78rem; border-bottom: 1px solid rgba(30,45,69,0.4);
+    }
+    .batch-row:last-child { border-bottom: none; }
+    .batch-row-key   { color: var(--text-muted); font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px; }
+    .batch-row-val   { color: var(--text-primary); font-family: var(--mono); font-size: 0.75rem; }
+
+    /* Alerts Panel */
+    .alerts-panel { overflow-y: auto; max-height: 320px; }
+    .alert-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 0; border-bottom: 1px solid rgba(30,45,69,0.4);
+    }
+    .alert-item:last-child { border-bottom: none; }
+    .alert-icon { font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+    .alert-body { flex: 1; }
+    .alert-title { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); }
+    .alert-meta  { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+    .alert-time  { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; }
+
+    .empty-alerts {
+      text-align: center; padding: 2rem;
+      font-family: var(--mono); font-size: 0.75rem; color: var(--text-muted);
+      letter-spacing: 2px;
+    }
+
+    /* ===== FIREBASE CONFIG BANNER ===== */
+    #configBanner {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(90deg, rgba(41,121,255,0.15), rgba(0,229,255,0.1));
+      border-top: 1px solid var(--accent-blue);
+      padding: 12px 2rem;
+      display: flex; align-items: center; gap: 1rem;
+      z-index: 200; backdrop-filter: blur(8px);
+      font-size: 0.78rem;
+    }
+    #configBanner .banner-icon { font-size: 1.2rem; }
+    #configBanner .banner-text { flex: 1; color: var(--text-muted); }
+    #configBanner .banner-text strong { color: var(--accent-cyan); }
+    #configBanner button {
+      font-family: var(--mono); font-size: 0.7rem;
+      padding: 6px 16px; cursor: pointer; border-radius: 2px;
+      border: 1px solid var(--accent-cyan); color: var(--accent-cyan);
+      background: transparent; letter-spacing: 1px; transition: all 0.2s;
+    }
+    #configBanner button:hover { background: var(--accent-cyan); color: #000; }
+
+    /* Config Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: rgba(7,9,15,0.9); align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2rem; max-width: 540px; width: 90%;
+    }
+    .modal h2 {
+      font-size: 1rem; letter-spacing: 2px; color: var(--accent-cyan);
+      margin-bottom: 0.5rem;
+    }
+    .modal p { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.6; }
+    .modal label { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); letter-spacing: 2px; display: block; margin-bottom: 4px; }
+    .modal input {
+      width: 100%; background: var(--bg-deep);
+      border: 1px solid var(--border); color: var(--text-primary);
+      font-family: var(--mono); font-size: 0.78rem;
+      padding: 8px 12px; border-radius: 2px; margin-bottom: 12px;
+    }
+    .modal input:focus { outline: none; border-color: var(--accent-cyan); }
+    .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end; }
+    .btn-primary {
+      font-family: var(--mono); font-size: 0.7rem;
+      padding: 8px 20px; border-radius: 2px; cursor: pointer;
+      background: var(--accent-cyan); color: #000; border: none;
+      letter-spacing: 1px; font-weight: 700; transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-ghost {
+      font-family: var(--mono); font-size: 0.7rem;
+      padding: 8px 16px; border-radius: 2px; cursor: pointer;
+      border: 1px solid var(--border); color: var(--text-muted);
+      background: transparent; letter-spacing: 1px; transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .cards-grid { grid-template-columns: 1fr 1fr; }
+      .timeline-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      main { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">MT</div>
+    <div>
+      <div class="logo-text">MEDTRACK</div>
+      <div class="logo-sub">DRUG INVENTORY & SUPPLY CHAIN</div>
+    </div>
+  </div>
+  <div class="header-breadcrumb">
+    MEDTECH / <span>BIOTECH</span> / HEALTHTECH &nbsp;·&nbsp; PS9
+  </div>
+  <div class="header-right">
+    <div class="live-dot" id="liveStatus">CONNECTING...</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ SECTION 1: SUMMARY CARDS ============ -->
+  <div class="section-label">// 01 &nbsp; OVERVIEW METRICS</div>
+  <div class="cards-grid">
+    <div class="stat-card cyan">
+      <div class="stat-glyph">📦</div>
+      <div class="stat-label">Total Batches</div>
+      <div class="stat-value" id="totalBatches">—</div>
+      <div class="stat-sub" id="totalBatchesSub">loading firebase...</div>
+      <div class="stat-corner-decor">INVENTORY</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-glyph">🚚</div>
+      <div class="stat-label">Active Shipments</div>
+      <div class="stat-value" id="activeShipments">—</div>
+      <div class="stat-sub" id="activeShipmentsSub">status = IN TRANSIT</div>
+      <div class="stat-corner-decor">LOGISTICS</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-glyph">⚠️</div>
+      <div class="stat-label">System Alerts</div>
+      <div class="stat-value" id="systemAlerts">—</div>
+      <div class="stat-sub" id="systemAlertsSub">temp &gt; 8°C threshold</div>
+      <div class="stat-corner-decor">CRITICAL</div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION 2: INVENTORY TABLE ============ -->
+  <div class="section-label">// 02 &nbsp; LIVE INVENTORY TABLE</div>
+  <div class="table-wrapper">
+    <div class="table-header">
+      <div class="table-title">REAL-TIME DRUG INVENTORY</div>
+      <div class="table-actions">
+        <button class="pill-btn active" onclick="filterTable('all',this)">ALL</button>
+        <button class="pill-btn" onclick="filterTable('SAFE',this)">SAFE</button>
+        <button class="pill-btn" onclick="filterTable('WARNING',this)">WARNING</button>
+        <button class="pill-btn" onclick="filterTable('CRITICAL',this)">CRITICAL</button>
+        <button class="pill-btn" onclick="refreshData()">↻ REFRESH</button>
+      </div>
+    </div>
+    <table id="inventoryTable">
+      <thead>
+        <tr>
+          <th>Drug Name</th>
+          <th>Batch ID</th>
+          <th>Location</th>
+          <th>Target Clinic</th>
+          <th>Temp (°C)</th>
+          <th>Unit Cost</th>
+          <th>Qty</th>
+          <th>Status</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr class="loading-row">
+          <td colspan="9">
+            <span class="spinner"></span> FETCHING FROM FIREBASE...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ SECTION 3: TIMELINE + ALERTS ============ -->
+  <div class="section-label">// 03 &nbsp; SHIPMENT TRACKING & ALERTS</div>
+  <div class="timeline-grid">
+
+    <!-- Timeline -->
+    <div class="timeline-card">
+      <div class="timeline-card-title">Batch Status Timeline</div>
+      <div class="batch-select-wrap">
+        <label>SELECT BATCH</label>
+        <select id="batchSelect" onchange="updateTimeline()">
+          <option value="">— loading batches —</option>
+        </select>
+      </div>
+
+      <div class="pipeline" id="pipeline">
+        <div class="pipeline-step" id="step-warehouse">
+          <div class="pipeline-step-node">🏭</div>
+          <div class="pipeline-step-label">WAREHOUSE</div>
+        </div>
+        <div class="pipeline-connector" id="con-1"></div>
+        <div class="pipeline-step" id="step-transit">
+          <div class="pipeline-step-node">🚚</div>
+          <div class="pipeline-step-label">IN TRANSIT</div>
+        </div>
+        <div class="pipeline-connector" id="con-2"></div>
+        <div class="pipeline-step" id="step-clinic">
+          <div class="pipeline-step-node">🏥</div>
+          <div class="pipeline-step-label">CLINIC</div>
+        </div>
+      </div>
+
+      <div class="batch-detail" id="batchDetail">
+        <div class="batch-row"><span class="batch-row-key">DRUG</span><span class="batch-row-val" id="det-drug">—</span></div>
+        <div class="batch-row"><span class="batch-row-key">LOCATION</span><span class="batch-row-val" id="det-loc">—</span></div>
+        <div class="batch-row"><span class="batch-row-key">TARGET</span><span class="batch-row-val" id="det-target">—</span></div>
+        <div class="batch-row"><span class="batch-row-key">TEMP</span><span class="batch-row-val" id="det-temp">—</span></div>
+        <div class="batch-row"><span class="batch-row-key">QTY</span><span class="batch-row-val" id="det-qty">—</span></div>
+        <div class="batch-row"><span class="batch-row-key">STATUS</span><span class="batch-row-val" id="det-status">—</span></div>
+      </div>
+    </div>
+
+    <!-- Alerts Panel -->
+    <div class="timeline-card">
+      <div class="timeline-card-title">Active Alerts</div>
+      <div class="alerts-panel" id="alertsPanel">
+        <div class="empty-alerts">LOADING...</div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- ============ CONFIG BANNER ============ -->
+<div id="configBanner">
+  <div class="banner-icon">🔧</div>
+  <div class="banner-text">
+    <strong>Firebase not connected.</strong> Paste your Firebase config to pull live data from your MedTrack database.
+  </div>
+  <button onclick="openModal()">CONNECT FIREBASE</button>
+  <button onclick="useDemoData()" style="border-color:var(--accent-warn);color:var(--accent-warn)">USE DEMO DATA</button>
+</div>
+
+<!-- ============ CONFIG MODAL ============ -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal">
+    <h2>🔧 FIREBASE CONFIGURATION</h2>
+    <p>
+      In Firebase Console → Project Settings → Your Apps → Web app, copy the <code>firebaseConfig</code> values and paste them below.
+      Your data stays in <strong>your</strong> Firebase — nothing is sent to us.
+    </p>
+
+    <label>API KEY</label>
+    <input id="cfg-apiKey" placeholder="AIzaSy..." />
+
+    <label>AUTH DOMAIN</label>
+    <input id="cfg-authDomain" placeholder="your-app.firebaseapp.com" />
+
+    <label>PROJECT ID</label>
+    <input id="cfg-projectId" placeholder="your-project-id" />
+
+    <label>STORAGE BUCKET</label>
+    <input id="cfg-storageBucket" placeholder="your-app.appspot.com" />
+
+    <label>MESSAGING SENDER ID</label>
+    <input id="cfg-messagingSenderId" placeholder="123456789" />
+
+    <label>APP ID</label>
+    <input id="cfg-appId" placeholder="1:123456:web:abc..." />
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">CANCEL</button>
+      <button class="btn-primary" onclick="connectFirebase()">CONNECT & LOAD DATA</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs }
+                                   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ─── GLOBALS ──────────────────────────────────────────
+  let allDocs = [];
+  let currentFilter = 'all';
+  let db = null;
+
+  // ─── CLOCK ────────────────────────────────────────────
+  function tickClock() {
+    document.getElementById('clock').textContent =
+      new Date().toLocaleTimeString('en-IN', { hour12: false });
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // ─── MODAL HELPERS ────────────────────────────────────
+  window.openModal  = () => document.getElementById('configModal').classList.add('open');
+  window.closeModal = () => document.getElementById('configModal').classList.remove('open');
+
+  // ─── CONNECT FIREBASE ─────────────────────────────────
+  window.connectFirebase = async () => {
+    const cfg = {
+      apiKey:            document.getElementById('cfg-apiKey').value.trim(),
+      authDomain:        document.getElementById('cfg-authDomain').value.trim(),
+      projectId:         document.getElementById('cfg-projectId').value.trim(),
+      storageBucket:     document.getElementById('cfg-storageBucket').value.trim(),
+      messagingSenderId: document.getElementById('cfg-messagingSenderId').value.trim(),
+      appId:             document.getElementById('cfg-appId').value.trim(),
+    };
+
+    if (!cfg.apiKey || !cfg.projectId) {
+      alert('Please enter at least API Key and Project ID.');
+      return;
+    }
+
+    try {
+      const app = initializeApp(cfg, 'medtrack-' + Date.now());
+      db = getFirestore(app);
+      closeModal();
+      document.getElementById('configBanner').style.display = 'none';
+      await loadFromFirebase();
+    } catch (err) {
+      alert('Firebase connection failed: ' + err.message);
+    }
+  };
+
+  // ─── LOAD FROM FIREBASE ───────────────────────────────
+  async function loadFromFirebase() {
+    setLiveStatus('SYNCING…', '#ffab00');
+    setTableLoading();
+    try {
+      const snap = await getDocs(collection(db, 'INVENTORY'));
+      allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setLiveStatus('LIVE', '#00e676');
+      renderAll();
+    } catch (err) {
+      setLiveStatus('ERROR', '#ff1744');
+      console.error(err);
+      alert('Could not read INVENTORY collection. Make sure Firestore rules allow reads.\n\n' + err.message);
+    }
+  }
+
+  window.refreshData = async () => {
+    if (db) await loadFromFirebase();
+    else alert('Connect Firebase first.');
+  };
+
+  // ─── DEMO DATA ────────────────────────────────────────
+  window.useDemoData = () => {
+    document.getElementById('configBanner').style.display = 'none';
+    allDocs = [
+      { id:'fkoMQJm9PHNh6EF4ej1e', DRUG_NAME:'INSULIN',      LOCATION:'PHARMACY AB, PUNE',     TARGET_CLINIC:'ABC HOSPITAL, PUNE',    TEMPERATURE:4,  QUANTITY:6000, STATUS:'WARNING',   UNIT_COST:0.7,  TIMESTAMP: { seconds: Math.floor(Date.now()/1000) } },
+      { id:'DC5qEu1GQ_demo1',      DRUG_NAME:'AMOXICILLIN',   LOCATION:'CENTRAL WAREHOUSE',      TARGET_CLINIC:'CITY CLINIC, MUMBAI',   TEMPERATURE:22, QUANTITY:1200, STATUS:'SAFE',      UNIT_COST:0.15, TIMESTAMP: { seconds: Math.floor(Date.now()/1000) - 3600 } },
+      { id:'ABC123_demo2',         DRUG_NAME:'METFORMIN',     LOCATION:'IN TRANSIT',              TARGET_CLINIC:'SUNRISE HOSPITAL, DELHI', TEMPERATURE:10,QUANTITY:800,  STATUS:'CRITICAL',  UNIT_COST:0.05, TIMESTAMP: { seconds: Math.floor(Date.now()/1000) - 7200 } },
+      { id:'XYZ789_demo3',         DRUG_NAME:'ATORVASTATIN',  LOCATION:'REGIONAL HUB, HYDERABAD', TARGET_CLINIC:'APOLLO CLINIC, HYD',   TEMPERATURE:6,  QUANTITY:3000, STATUS:'SAFE',      UNIT_COST:0.25, TIMESTAMP: { seconds: Math.floor(Date.now()/1000) - 1800 } },
+      { id:'MNO456_demo4',         DRUG_NAME:'PARACETAMOL',   LOCATION:'IN TRANSIT',              TARGET_CLINIC:'GOVT HOSPITAL, NELLORE',TEMPERATURE:35, QUANTITY:5000, STATUS:'CRITICAL',  UNIT_COST:0.02, TIMESTAMP: { seconds: Math.floor(Date.now()/1000) - 900  } },
+    ];
+    setLiveStatus('DEMO MODE', '#ffab00');
+    renderAll();
+  };
+
+  // ─── RENDER ALL ───────────────────────────────────────
+  function renderAll() {
+    renderCards();
+    renderTable(allDocs);
+    populateBatchSelect();
+    renderAlerts();
+    if (allDocs.length) {
+      document.getElementById('batchSelect').value = allDocs[0].id;
+      updateTimeline();
+    }
+  }
+
+  // ─── CARDS ────────────────────────────────────────────
+  function renderCards() {
+    const total    = allDocs.length;
+    const transit  = allDocs.filter(d => (d.STATUS||'').toUpperCase() === 'IN TRANSIT' || (d.LOCATION||'').toUpperCase().includes('IN TRANSIT')).length;
+    const alerts   = allDocs.filter(d => (d.TEMPERATURE || 0) > 8).length;
+
+    animateCount('totalBatches', total);
+    animateCount('activeShipments', transit);
+    animateCount('systemAlerts', alerts);
+
+    document.getElementById('totalBatchesSub').textContent = `${total} document${total!==1?'s':''} in INVENTORY`;
+    document.getElementById('activeShipmentsSub').textContent = transit ? `${transit} batch${transit!==1?'es':''} in transit` : 'no active transit';
+    document.getElementById('systemAlertsSub').textContent   = alerts  ? `${alerts} batch${alerts!==1?'es':''} above 8°C` : 'all temps nominal';
+  }
+
+  function animateCount(id, target) {
+    const el = document.getElementById(id);
+    let n = 0;
+    const step = Math.max(1, Math.ceil(target / 20));
+    const iv = setInterval(() => {
+      n = Math.min(n + step, target);
+      el.textContent = n;
+      if (n >= target) clearInterval(iv);
+    }, 40);
+  }
+
+  // ─── TABLE ────────────────────────────────────────────
+  function renderTable(docs) {
+    const tbody = document.getElementById('tableBody');
+    if (!docs.length) {
+      tbody.innerHTML = `<tr class="loading-row"><td colspan="9">NO RECORDS FOUND</td></tr>`;
+      return;
+    }
+
+    const filtered = currentFilter === 'all' ? docs
+      : docs.filter(d => (d.STATUS||'').toUpperCase() === currentFilter.toUpperCase());
+
+    tbody.innerHTML = filtered.map(d => {
+      const status  = (d.STATUS || 'UNKNOWN').toUpperCase();
+      const temp    = d.TEMPERATURE ?? '—';
+      const tempClass = temp === '—' ? '' : temp > 8 ? 'temp-hot' : temp > 6 ? 'temp-warn' : 'temp-ok';
+      const badgeClass = status === 'SAFE' ? 'safe' : status === 'CRITICAL' ? 'critical' : status === 'WARNING' ? 'warning' : 'transit';
+      const ts = d.TIMESTAMP?.seconds
+        ? new Date(d.TIMESTAMP.seconds * 1000).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false })
+        : '—';
+
+      return `<tr>
+        <td><strong>${d.DRUG_NAME || '—'}</strong></td>
+        <td class="td-mono" title="${d.id}">${d.id.substring(0,12)}…</td>
+        <td>${d.LOCATION || '—'}</td>
+        <td>${d.TARGET_CLINIC || '—'}</td>
+        <td class="td-mono ${tempClass}">${temp}${temp !== '—' ? '°C' : ''}</td>
+        <td class="td-mono">₹${d.UNIT_COST ?? '—'}</td>
+        <td class="td-mono">${(d.QUANTITY||0).toLocaleString()}</td>
+        <td><span class="badge ${badgeClass}">${status}</span></td>
+        <td class="td-mono" style="font-size:0.7rem;color:var(--text-muted)">${ts}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  window.filterTable = (f, btn) => {
+    currentFilter = f;
+    document.querySelectorAll('.table-actions .pill-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable(allDocs);
+  };
+
+  // ─── BATCH SELECT ─────────────────────────────────────
+  function populateBatchSelect() {
+    const sel = document.getElementById('batchSelect');
+    sel.innerHTML = allDocs.map(d =>
+      `<option value="${d.id}">${d.DRUG_NAME || d.id.substring(0,12)} — ${d.LOCATION || '?'}</option>`
+    ).join('');
+  }
+
+  window.updateTimeline = () => {
+    const id  = document.getElementById('batchSelect').value;
+    const doc = allDocs.find(d => d.id === id);
+    if (!doc) return;
+
+    const loc = (doc.LOCATION || '').toUpperCase();
+    const isClinic  = loc.includes('HOSPITAL') || loc.includes('CLINIC') || loc.includes('PHARMACY');
+    const isTransit = loc.includes('TRANSIT');
+    const isWH      = !isClinic && !isTransit;
+
+    // Pipeline steps
+    const steps = ['step-warehouse', 'step-transit', 'step-clinic'];
+    steps.forEach(s => {
+      document.getElementById(s).classList.remove('active','done');
+    });
+    document.getElementById('con-1').classList.remove('done');
+    document.getElementById('con-2').classList.remove('done');
+
+    if (isWH) {
+      document.getElementById('step-warehouse').classList.add('active');
+    } else if (isTransit) {
+      document.getElementById('step-warehouse').classList.add('done');
+      document.getElementById('con-1').classList.add('done');
+      document.getElementById('step-transit').classList.add('active');
+    } else {
+      document.getElementById('step-warehouse').classList.add('done');
+      document.getElementById('con-1').classList.add('done');
+      document.getElementById('step-transit').classList.add('done');
+      document.getElementById('con-2').classList.add('done');
+      document.getElementById('step-clinic').classList.add('active');
+    }
+
+    // Detail rows
+    document.getElementById('det-drug').textContent   = doc.DRUG_NAME || '—';
+    document.getElementById('det-loc').textContent    = doc.LOCATION  || '—';
+    document.getElementById('det-target').textContent = doc.TARGET_CLINIC || '—';
+    document.getElementById('det-temp').textContent   = doc.TEMPERATURE != null ? doc.TEMPERATURE + '°C' : '—';
+    document.getElementById('det-qty').textContent    = (doc.QUANTITY||0).toLocaleString() + ' units';
+    const statusEl = document.getElementById('det-status');
+    const status   = (doc.STATUS || 'UNKNOWN').toUpperCase();
+    statusEl.textContent = status;
+    statusEl.style.color = status === 'SAFE' ? 'var(--accent-green)' : status === 'CRITICAL' ? 'var(--accent-red)' : 'var(--accent-warn)';
+  };
+
+  // ─── ALERTS ───────────────────────────────────────────
+  function renderAlerts() {
+    const panel  = document.getElementById('alertsPanel');
+    const alerts = allDocs.filter(d => (d.TEMPERATURE||0) > 8 || (d.STATUS||'').toUpperCase() === 'CRITICAL');
+
+    if (!alerts.length) {
+      panel.innerHTML = '<div class="empty-alerts">✅ NO ACTIVE ALERTS</div>';
+      return;
+    }
+
+    panel.innerHTML = alerts.map(d => {
+      const isTemp = (d.TEMPERATURE||0) > 8;
+      const isCrit = (d.STATUS||'').toUpperCase() === 'CRITICAL';
+      const icon  = isCrit ? '🔴' : '🟡';
+      const title = isCrit
+        ? `CRITICAL STATUS: ${d.DRUG_NAME}`
+        : `TEMP BREACH: ${d.DRUG_NAME} at ${d.TEMPERATURE}°C`;
+      const meta  = `${d.LOCATION} → ${d.TARGET_CLINIC}`;
+      const ts    = d.TIMESTAMP?.seconds
+        ? new Date(d.TIMESTAMP.seconds * 1000).toLocaleTimeString('en-IN', { hour12: false })
+        : 'NOW';
+      return `
+        <div class="alert-item">
+          <div class="alert-icon">${icon}</div>
+          <div class="alert-body">
+            <div class="alert-title">${title}</div>
+            <div class="alert-meta">${meta}</div>
+          </div>
+          <div class="alert-time">${ts}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ─── HELPERS ──────────────────────────────────────────
+  function setLiveStatus(text, color) {
+    const el = document.getElementById('liveStatus');
+    el.textContent = text;
+    el.style.color = color;
+  }
+
+  function setTableLoading() {
+    document.getElementById('tableBody').innerHTML =
+      `<tr class="loading-row"><td colspan="9"><span class="spinner"></span> FETCHING FROM FIREBASE...</td></tr>`;
+  }
+</script>
+
+</body>
+</html>

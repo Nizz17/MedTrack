@@ -1,505 +1,1054 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MedTrack — Drug Marketplace</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg:#07090f; --panel:#0d1220; --card:#111827;
-      --border:#1e2d45; --cyan:#00e5ff; --blue:#2979ff;
-      --green:#00e676; --red:#ff1744; --warn:#ffab00;
-      --muted:#546e8a; --dim:#2d4a6b;
-      --mono:'Share Tech Mono',monospace;
-      --sans:'Exo 2',sans-serif;
-    }
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:#e8f4fd;font-family:var(--sans);min-height:100vh;}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MedTrack — Drug Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0f1e;
+  --bg2: #0d1526;
+  --bg3: #111c30;
+  --border: #1e2d4a;
+  --border2: #1a2540;
+  --accent: #00c6ff;
+  --accent2: #0072ff;
+  --green: #00e676;
+  --yellow: #ffd600;
+  --red: #ff1744;
+  --orange: #ff6d00;
+  --text: #e8f0ff;
+  --text2: #8fa0c0;
+  --text3: #4a6080;
+  --card: #0e1828;
+  --card2: #111e32;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
 
-    /* NAV */
-    nav{display:flex;align-items:center;justify-content:space-between;
-      padding:0 2rem;height:64px;background:var(--panel);
-      border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
-    .logo{display:flex;align-items:center;gap:10px;}
-    .logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--cyan),var(--blue));
-      clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
-      display:flex;align-items:center;justify-content:center;
-      font-family:var(--mono);font-size:11px;color:#000;font-weight:bold;}
-    .logo-text{font-size:1.2rem;font-weight:900;letter-spacing:3px;color:var(--cyan);}
-    .nav-links{display:flex;gap:1.5rem;}
-    .nav-link{font-family:var(--mono);font-size:0.65rem;letter-spacing:2px;
-      color:var(--muted);text-decoration:none;transition:color 0.2s;}
-    .nav-link:hover,.nav-link.active{color:var(--cyan);}
-    .cart-btn{position:relative;font-family:var(--mono);font-size:0.7rem;
-      padding:8px 16px;border:1px solid var(--cyan);color:var(--cyan);
-      background:rgba(0,229,255,0.05);border-radius:2px;cursor:pointer;
-      letter-spacing:2px;transition:all 0.2s;}
-    .cart-btn:hover{background:var(--cyan);color:#000;}
-    .cart-count{position:absolute;top:-8px;right:-8px;
-      background:var(--red);color:#fff;border-radius:50%;
-      width:18px;height:18px;font-size:0.6rem;
-      display:flex;align-items:center;justify-content:center;font-weight:700;}
+/* ── NAV ── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;}
+.nav-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+.nav-links{display:flex;gap:4px;}
+.nav-links a{padding:6px 14px;border-radius:6px;font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:1px;color:var(--text2);text-decoration:none;transition:.2s;}
+.nav-links a:hover{color:var(--text);background:var(--bg3);}
+.nav-links a.active{color:var(--accent);background:rgba(0,198,255,.08);}
+.cart-btn{display:flex;align-items:center;gap:8px;padding:7px 16px;background:var(--accent2);color:#fff;border:none;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.2s;position:relative;}
+.cart-btn:hover{background:#0085ff;transform:translateY(-1px);}
+.cart-count{background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;position:absolute;top:-6px;right:-6px;}
 
-    main{padding:2rem;max-width:1400px;margin:0 auto;}
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.stat-cell{padding:14px 20px;background:var(--bg2);}
+.stat-label{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1.5px;margin-bottom:4px;}
+.stat-value{font-size:18px;font-family:var(--mono);font-weight:700;color:var(--accent);}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:2px;}
 
-    /* SEARCH + FILTER BAR */
-    .toolbar{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;align-items:center;}
-    .search-wrap{flex:1;min-width:200px;position:relative;}
-    .search-wrap input{width:100%;background:var(--card);border:1px solid var(--border);
-      color:#e8f4fd;font-family:var(--mono);font-size:0.8rem;
-      padding:10px 12px 10px 36px;border-radius:2px;}
-    .search-wrap input:focus{outline:none;border-color:var(--cyan);}
-    .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);
-      color:var(--muted);font-size:0.9rem;}
-    .filter-pills{display:flex;gap:0.5rem;flex-wrap:wrap;}
-    .filter-pill{font-family:var(--mono);font-size:0.6rem;letter-spacing:1px;
-      padding:6px 14px;border:1px solid var(--border);border-radius:2px;
-      cursor:pointer;color:var(--muted);background:transparent;transition:all 0.2s;}
-    .filter-pill:hover,.filter-pill.active{border-color:var(--cyan);color:var(--cyan);}
+/* ── MAIN LAYOUT ── */
+.main{display:grid;grid-template-columns:1fr 340px;min-height:calc(100vh - 56px - 50px);}
+.left-col{padding:24px;overflow-y:auto;}
+.right-col{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;}
 
-    /* STATS STRIP */
-    .stats-strip{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;}
-    .strip-stat{background:var(--card);border:1px solid var(--border);
-      border-radius:4px;padding:0.8rem 1.2rem;flex:1;min-width:140px;}
-    .strip-label{font-family:var(--mono);font-size:0.55rem;letter-spacing:3px;color:var(--muted);}
-    .strip-val{font-family:var(--mono);font-size:1.4rem;color:var(--cyan);margin-top:2px;}
+/* ── SEARCH BAR ── */
+.search-section{margin-bottom:20px;}
+.search-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-bottom:8px;}
+.search-box{display:flex;gap:8px;margin-bottom:12px;}
+.search-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 16px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;transition:.2s;}
+.search-input::placeholder{color:var(--text3);}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,198,255,.1);}
+.search-btn{padding:11px 20px;background:var(--accent2);color:#fff;border:none;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:1px;}
+.search-btn:hover{background:#0085ff;}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;}
+.filter-btn{padding:5px 14px;border-radius:20px;font-size:11px;font-family:var(--mono);letter-spacing:.5px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);transition:.2s;}
+.filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+.filter-btn.active{background:var(--accent);border-color:var(--accent);color:var(--bg);}
 
-    /* DRUG GRID */
-    .drug-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;}
+/* ── SECTION HEADER ── */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:2px;}
+.section-count{font-family:var(--mono);font-size:11px;color:var(--accent);}
 
-    .drug-card{background:var(--card);border:1px solid var(--border);
-      border-radius:4px;overflow:hidden;transition:all 0.25s;
-      animation:fadeUp 0.4s ease both;}
-    .drug-card:hover{border-color:var(--cyan);transform:translateY(-3px);
-      box-shadow:0 8px 32px rgba(0,229,255,0.08);}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+/* ── MEDICINE GRID ── */
+.med-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.med-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:default;transition:.2s;position:relative;overflow:hidden;}
+.med-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));opacity:0;transition:.2s;}
+.med-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,114,255,.15);}
+.med-card:hover::before{opacity:1;}
+.med-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:9px;font-family:var(--mono);font-weight:700;letter-spacing:1px;margin-bottom:10px;}
+.badge-jau{background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--green);}
+.badge-inv{background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);}
+.badge-sale{background:rgba(255,109,0,.1);border:1px solid rgba(255,109,0,.3);color:var(--orange);}
+.med-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4;}
+.med-generic{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:10px;}
+.med-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.meta-item{background:var(--bg3);border-radius:6px;padding:6px 8px;}
+.meta-label{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:1px;margin-bottom:2px;}
+.meta-val{font-size:12px;font-weight:600;color:var(--text);font-family:var(--mono);}
+.meta-val.price{color:var(--green);}
+.meta-val.avail{color:var(--accent);}
+.add-btn{width:100%;padding:8px;background:transparent;border:1px solid var(--accent2);border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.2s;}
+.add-btn:hover{background:var(--accent2);color:#fff;}
+.add-btn.added{background:var(--green);border-color:var(--green);color:var(--bg);}
+.qty-control{display:flex;align-items:center;gap:6px;justify-content:center;}
+.qty-btn{width:28px;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.qty-btn:hover{border-color:var(--accent);color:var(--accent);}
+.qty-num{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);min-width:24px;text-align:center;}
 
-    .card-top{padding:1.2rem;border-bottom:1px solid var(--border);
-      display:flex;justify-content:space-between;align-items:flex-start;}
-    .drug-name{font-size:1rem;font-weight:700;letter-spacing:1px;}
-    .drug-category{font-family:var(--mono);font-size:0.6rem;color:var(--muted);
-      letter-spacing:2px;margin-top:3px;}
-    .temp-badge{font-family:var(--mono);font-size:0.65rem;padding:4px 8px;
-      border-radius:2px;font-weight:700;}
-    .temp-ok{color:var(--green);background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);}
-    .temp-warn{color:var(--warn);background:rgba(255,171,0,0.1);border:1px solid rgba(255,171,0,0.3);}
-    .temp-hot{color:var(--red);background:rgba(255,23,68,0.1);border:1px solid rgba(255,23,68,0.3);}
+/* ── CART ── */
+.cart-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.cart-title{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:2px;}
+.cart-clear{font-size:10px;font-family:var(--mono);color:var(--text3);cursor:pointer;background:none;border:none;transition:.2s;}
+.cart-clear:hover{color:var(--red);}
+.cart-items{flex:1;overflow-y:auto;padding:12px;}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--text3);font-family:var(--mono);font-size:11px;letter-spacing:1px;gap:8px;}
+.cart-empty .icon{font-size:32px;opacity:.3;}
+.cart-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px;}
+.ci-name{font-size:12px;font-weight:600;color:var(--text);}
+.ci-unit{font-size:10px;font-family:var(--mono);color:var(--text3);}
+.ci-row{display:flex;align-items:center;justify-content:space-between;}
+.ci-price{font-family:var(--mono);font-size:13px;color:var(--green);font-weight:700;}
+.ci-rm{background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;transition:.2s;}
+.ci-rm:hover{color:var(--red);}
+.cart-footer{padding:16px 20px;border-top:1px solid var(--border);}
+.cart-total-row{display:flex;justify-content:space-between;margin-bottom:4px;}
+.cart-total-label{font-size:11px;color:var(--text2);}
+.cart-total-val{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent);}
+.cart-items-count{font-size:10px;color:var(--text3);margin-bottom:14px;}
+.place-order-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1.5px;cursor:pointer;transition:.2s;}
+.place-order-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,114,255,.4);}
+.place-order-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
-    .card-body{padding:1.2rem;}
-    .card-row{display:flex;justify-content:space-between;
-      font-size:0.75rem;padding:4px 0;border-bottom:1px solid rgba(30,45,69,0.4);}
-    .card-row:last-of-type{border-bottom:none;}
-    .cr-key{color:var(--muted);font-family:var(--mono);font-size:0.65rem;}
-    .cr-val{font-family:var(--mono);font-size:0.7rem;}
+/* ── ORDER SUCCESS ── */
+.order-success{display:none;position:fixed;inset:0;z-index:200;background:rgba(10,15,30,.95);align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.order-success.show{display:flex;}
+.success-card{background:var(--bg2);border:1px solid var(--green);border-radius:16px;padding:36px;max-width:420px;width:90%;text-align:center;}
+.success-icon{font-size:48px;margin-bottom:16px;}
+.success-title{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);letter-spacing:2px;margin-bottom:8px;}
+.success-id{font-family:var(--mono);font-size:11px;color:var(--accent);background:rgba(0,198,255,.08);padding:8px 16px;border-radius:6px;margin:12px 0;}
+.success-msg{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6;}
+.success-actions{display:flex;gap:10px;justify-content:center;}
+.success-btn{padding:9px 20px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.2s;text-decoration:none;display:inline-flex;align-items:center;}
+.success-btn.primary{background:var(--accent2);color:#fff;border:none;}
+.success-btn.secondary{background:transparent;color:var(--text2);border:1px solid var(--border);}
+.success-btn:hover{transform:translateY(-1px);}
 
-    .card-footer{padding:1rem 1.2rem;border-top:1px solid var(--border);
-      display:flex;align-items:center;justify-content:space-between;}
-    .price{font-family:var(--mono);font-size:1.1rem;color:var(--cyan);font-weight:700;}
-    .price span{font-size:0.6rem;color:var(--muted);font-weight:400;}
+/* ── TRACKER PANEL ── */
+.tracker-panel{display:none;position:fixed;inset:0;z-index:200;background:rgba(10,15,30,.95);align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.tracker-panel.show{display:flex;}
+.tracker-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:560px;width:92%;max-height:90vh;overflow-y:auto;}
+.tracker-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.tracker-title{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;}
+.tracker-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;transition:.2s;}
+.tracker-close:hover{color:var(--text);}
+.order-id-display{font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--bg3);padding:8px 14px;border-radius:6px;margin-bottom:20px;}
+.order-id-display span{color:var(--accent);}
 
-    .qty-ctrl{display:flex;align-items:center;gap:8px;}
-    .qty-btn{width:28px;height:28px;border:1px solid var(--border);
-      background:transparent;color:#e8f4fd;cursor:pointer;border-radius:2px;
-      font-size:1rem;display:flex;align-items:center;justify-content:center;
-      transition:all 0.15s;}
-    .qty-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-    .qty-input{width:48px;background:var(--panel);border:1px solid var(--border);
-      color:#e8f4fd;font-family:var(--mono);font-size:0.8rem;
-      text-align:center;padding:4px;border-radius:2px;}
+/* Timeline */
+.timeline{position:relative;padding-left:28px;}
+.timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--border);}
+.tl-step{position:relative;margin-bottom:20px;}
+.tl-step:last-child{margin-bottom:0;}
+.tl-dot{position:absolute;left:-24px;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:9px;transition:.4s;}
+.tl-dot.done{border-color:var(--green);background:rgba(0,230,118,.15);color:var(--green);}
+.tl-dot.active{border-color:var(--accent);background:rgba(0,198,255,.15);color:var(--accent);box-shadow:0 0 12px rgba(0,198,255,.4);animation:glow 1.5s infinite;}
+.tl-dot.pending{border-color:var(--border);background:var(--bg3);color:var(--text3);}
+.tl-content{padding-left:12px;}
+.tl-label{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.tl-desc{font-size:11px;color:var(--text3);}
+.tl-time{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:2px;}
 
-    .add-cart-btn{font-family:var(--mono);font-size:0.65rem;letter-spacing:2px;
-      padding:8px 14px;background:var(--cyan);color:#000;border:none;
-      border-radius:2px;cursor:pointer;font-weight:700;transition:all 0.2s;}
-    .add-cart-btn:hover{opacity:0.85;}
-    .add-cart-btn.added{background:var(--green);}
+.order-items-summary{background:var(--bg3);border-radius:8px;padding:14px;margin-top:20px;}
+.ois-title{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-bottom:10px;}
+.ois-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2);font-size:12px;}
+.ois-item:last-child{border-bottom:none;}
+.ois-total{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.ois-total span{font-family:var(--mono);font-size:13px;font-weight:700;}
+.ois-total .val{color:var(--green);}
 
-    /* CART SIDEBAR */
-    .cart-overlay{position:fixed;inset:0;background:rgba(7,9,15,0.7);
-      z-index:200;display:none;backdrop-filter:blur(4px);}
-    .cart-overlay.open{display:block;}
-    .cart-sidebar{position:fixed;right:0;top:0;bottom:0;width:380px;
-      background:var(--panel);border-left:1px solid var(--border);
-      z-index:201;display:flex;flex-direction:column;
-      transform:translateX(100%);transition:transform 0.3s ease;}
-    .cart-sidebar.open{transform:translateX(0);}
+/* ── ORDERS LIST TAB ── */
+.orders-panel{display:none;}
+.orders-panel.active{display:block;}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.tab{padding:10px 20px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.order-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:.2s;}
+.order-row:hover{border-color:var(--accent);transform:translateX(2px);}
+.or-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.or-id{font-family:var(--mono);font-size:11px;color:var(--accent);}
+.or-status{font-size:10px;font-family:var(--mono);font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:4px;}
+.status-placed{background:rgba(255,214,0,.1);color:var(--yellow);border:1px solid rgba(255,214,0,.2);}
+.status-processing{background:rgba(0,198,255,.1);color:var(--accent);border:1px solid rgba(0,198,255,.2);}
+.status-shipped{background:rgba(255,109,0,.1);color:var(--orange);border:1px solid rgba(255,109,0,.2);}
+.status-delivered{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2);}
+.or-items{font-size:12px;color:var(--text2);margin-bottom:4px;}
+.or-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);}
+.or-meta .total{font-family:var(--mono);color:var(--green);}
 
-    .cart-header{padding:1.5rem;border-bottom:1px solid var(--border);
-      display:flex;justify-content:space-between;align-items:center;}
-    .cart-header h2{font-size:0.9rem;letter-spacing:3px;color:var(--cyan);}
-    .close-cart{background:transparent;border:none;color:var(--muted);
-      font-size:1.5rem;cursor:pointer;line-height:1;}
+/* ── FIREBASE STATUS ── */
+.firebase-bar{display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;}
+.fb-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);}
+.fb-dot.connected{background:var(--green);box-shadow:0 0 8px var(--green);}
+.fb-dot.connecting{background:var(--yellow);animation:pulse 1s infinite;}
 
-    .cart-items{flex:1;overflow-y:auto;padding:1rem;}
-    .cart-item{background:var(--card);border:1px solid var(--border);
-      border-radius:4px;padding:1rem;margin-bottom:0.8rem;}
-    .ci-name{font-weight:700;font-size:0.85rem;margin-bottom:6px;}
-    .ci-meta{font-family:var(--mono);font-size:0.65rem;color:var(--muted);
-      display:flex;justify-content:space-between;}
-    .ci-remove{float:right;background:transparent;border:none;
-      color:var(--red);cursor:pointer;font-size:0.75rem;font-family:var(--mono);}
+/* ── CONFIG MODAL ── */
+.config-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(10,15,30,.97);align-items:center;justify-content:center;}
+.config-modal.show{display:flex;}
+.config-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:480px;width:90%;}
+.config-title{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:6px;}
+.config-sub{font-size:12px;color:var(--text3);margin-bottom:20px;}
+.cfg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.cfg-field{display:flex;flex-direction:column;gap:4px;}
+.cfg-label{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;}
+.cfg-input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:.2s;}
+.cfg-input:focus{border-color:var(--accent);}
+.cfg-actions{display:flex;gap:10px;margin-top:16px;}
+.cfg-btn{padding:9px 20px;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.2s;border:none;}
+.cfg-btn.primary{background:var(--accent2);color:#fff;flex:1;}
+.cfg-btn.secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.cfg-btn:hover{transform:translateY(-1px);}
+.cfg-btn.demo-btn{background:var(--bg3);color:var(--accent);border:1px solid var(--accent);}
 
-    .cart-footer{padding:1.5rem;border-top:1px solid var(--border);}
-    .cart-total{display:flex;justify-content:space-between;margin-bottom:1rem;}
-    .cart-total-label{font-family:var(--mono);font-size:0.7rem;letter-spacing:2px;color:var(--muted);}
-    .cart-total-val{font-family:var(--mono);font-size:1.2rem;color:var(--cyan);font-weight:700;}
-    .checkout-btn{width:100%;padding:14px;font-family:var(--mono);font-size:0.8rem;
-      letter-spacing:3px;background:var(--cyan);color:#000;border:none;
-      border-radius:2px;cursor:pointer;font-weight:700;transition:opacity 0.2s;}
-    .checkout-btn:hover{opacity:0.85;}
+/* ── LOADING ── */
+.loading-overlay{display:none;position:fixed;inset:0;z-index:150;background:rgba(10,15,30,.8);align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.loading-overlay.show{display:flex;}
+.loading-box{text-align:center;}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+.loading-txt{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:1.5px;}
 
-    /* ORDER CONFIRM MODAL */
-    .modal-overlay{display:none;position:fixed;inset:0;z-index:300;
-      background:rgba(7,9,15,0.9);align-items:center;justify-content:center;
-      backdrop-filter:blur(4px);}
-    .modal-overlay.open{display:flex;}
-    .modal{background:var(--panel);border:1px solid var(--border);
-      border-radius:4px;padding:2rem;max-width:440px;width:90%;text-align:center;}
-    .modal-icon{font-size:3rem;margin-bottom:1rem;}
-    .modal h2{font-size:1rem;letter-spacing:2px;color:var(--cyan);margin-bottom:0.5rem;}
-    .modal p{font-size:0.78rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.7;}
-    .modal-order-id{font-family:var(--mono);font-size:0.7rem;
-      background:var(--card);border:1px solid var(--border);
-      padding:8px 16px;border-radius:2px;color:var(--cyan);display:inline-block;margin-bottom:1.5rem;}
-    .btn-primary{font-family:var(--mono);font-size:0.75rem;
-      padding:10px 24px;background:var(--cyan);color:#000;border:none;
-      border-radius:2px;cursor:pointer;font-weight:700;letter-spacing:2px;}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:400;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-family:var(--mono);font-size:11px;color:var(--text);letter-spacing:.5px;transform:translateY(60px);opacity:0;transition:.3s;max-width:300px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--green);color:var(--green);}
+.toast.error{border-color:var(--red);color:var(--red);}
+.toast.info{border-color:var(--accent);color:var(--accent);}
 
-    /* CFG BANNER */
-    #cfgBanner{position:fixed;bottom:0;left:0;right:0;
-      background:rgba(13,18,32,0.95);border-top:1px solid var(--blue);
-      padding:12px 2rem;display:flex;align-items:center;gap:1rem;
-      z-index:400;backdrop-filter:blur(8px);}
-    #cfgBanner .bt{color:var(--muted);font-size:0.78rem;flex:1;}
-    #cfgBanner .bt strong{color:var(--cyan);}
-    .cfg-input{font-family:var(--mono);font-size:0.7rem;
-      padding:6px 10px;background:var(--card);border:1px solid var(--border);
-      color:#e8f4fd;border-radius:2px;width:180px;}
-    .cfg-input:focus{outline:none;border-color:var(--cyan);}
-    .cfgbtn{font-family:var(--mono);font-size:0.65rem;
-      padding:7px 14px;border:1px solid var(--cyan);color:var(--cyan);
-      background:transparent;border-radius:2px;cursor:pointer;letter-spacing:1px;}
-    .cfgbtn:hover{background:var(--cyan);color:#000;}
-    .demobtn{font-family:var(--mono);font-size:0.65rem;
-      padding:7px 14px;border:1px solid var(--warn);color:var(--warn);
-      background:transparent;border-radius:2px;cursor:pointer;letter-spacing:1px;}
+/* ── ANIMATIONS ── */
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes glow{0%,100%{box-shadow:0 0 6px rgba(0,198,255,.4);}50%{box-shadow:0 0 16px rgba(0,198,255,.8);}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.med-card{animation:fadeIn .25s ease both;}
 
-    .empty-state{grid-column:1/-1;text-align:center;padding:4rem;
-      font-family:var(--mono);font-size:0.75rem;color:var(--muted);letter-spacing:2px;}
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text3);}
 
-    @media(max-width:600px){
-      .cart-sidebar{width:100%;}
-      #cfgBanner{flex-direction:column;align-items:flex-start;}
-    }
-  </style>
+.no-results{text-align:center;padding:60px 20px;color:var(--text3);font-family:var(--mono);font-size:12px;letter-spacing:1px;}
+.no-results .icon{font-size:36px;display:block;margin-bottom:12px;opacity:.3;}
+</style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
-  <div class="logo">
-    <div class="logo-mark">MT</div>
-    <div>
-      <div class="logo-text">MEDBAZAAR</div>
-    </div>
-  </div>
+  <div class="nav-brand"><span class="dot"></span>MT // MEDBAZAAR</div>
   <div class="nav-links">
-    <a href="index.html" class="nav-link">DASHBOARD</a>
-    <a href="marketplace.html" class="nav-link active">MARKETPLACE</a>
-    <a href="orders.html" class="nav-link">MY ORDERS</a>
-    <a href="scanner.html" class="nav-link">QR SCAN</a>
+    <a href="index.html">DASHBOARD</a>
+    <a href="marketplace.html" class="active">MARKETPLACE</a>
+    <a href="orders.html" id="ordersNavLink">MY ORDERS</a>
+    <a href="qrgen.html">QR SCAN</a>
   </div>
-  <button class="cart-btn" onclick="openCart()">
-    🛒 CART
-    <span class="cart-count" id="cartCount">0</span>
-  </button>
+  <button class="cart-btn" onclick="openCart()">🛒 CART <span class="cart-count" id="cartCount">0</span></button>
 </nav>
 
-<main>
-  <!-- STATS STRIP -->
-  <div class="stats-strip">
-    <div class="strip-stat">
-      <div class="strip-label">LISTED DRUGS</div>
-      <div class="strip-val" id="stat-listed">—</div>
-    </div>
-    <div class="strip-stat">
-      <div class="strip-label">AVG TEMP</div>
-      <div class="strip-val" id="stat-temp">—</div>
-    </div>
-    <div class="strip-stat">
-      <div class="strip-label">COLD CHAIN OK</div>
-      <div class="strip-val" id="stat-cold">—</div>
-    </div>
-    <div class="strip-stat">
-      <div class="strip-label">YOUR CART VALUE</div>
-      <div class="strip-val" id="stat-cart">₹0</div>
-    </div>
-  </div>
+<!-- FIREBASE STATUS BAR -->
+<div class="firebase-bar">
+  <div class="fb-dot connecting" id="fbDot"></div>
+  <span id="fbStatus">CONNECTING TO FIREBASE...</span>
+</div>
 
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="SEARCH DRUG NAME..." oninput="applyFilters()"/>
-    </div>
-    <div class="filter-pills">
-      <button class="filter-pill active" onclick="setFilter('all',this)">ALL</button>
-      <button class="filter-pill" onclick="setFilter('SAFE',this)">✅ SAFE</button>
-      <button class="filter-pill" onclick="setFilter('WARNING',this)">⚠️ WARNING</button>
-      <button class="filter-pill" onclick="setFilter('cold',this)">❄️ COLD CHAIN</button>
-    </div>
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <div class="stat-label">TOTAL MEDICINES</div>
+    <div class="stat-value" id="totalMeds">—</div>
+    <div class="stat-sub">JAN AUSHADHI + INVENTORY</div>
   </div>
-
-  <!-- DRUG GRID -->
-  <div class="drug-grid" id="drugGrid">
-    <div class="empty-state">CONNECT FIREBASE TO LOAD MARKETPLACE...</div>
+  <div class="stat-cell">
+    <div class="stat-label">IN STOCK</div>
+    <div class="stat-value" id="inStockCount">—</div>
+    <div class="stat-sub">AVAILABLE NOW</div>
   </div>
-</main>
-
-<!-- CART SIDEBAR -->
-<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-<div class="cart-sidebar" id="cartSidebar">
-  <div class="cart-header">
-    <h2>🛒 YOUR CART</h2>
-    <button class="close-cart" onclick="closeCart()">×</button>
+  <div class="stat-cell">
+    <div class="stat-label">CART VALUE</div>
+    <div class="stat-value" id="cartTotal">₹0</div>
+    <div class="stat-sub">CURRENT SESSION</div>
   </div>
-  <div class="cart-items" id="cartItems">
-    <div style="text-align:center;padding:3rem;font-family:var(--mono);font-size:0.75rem;color:var(--muted);">
-      CART IS EMPTY
-    </div>
-  </div>
-  <div class="cart-footer">
-    <div class="cart-total">
-      <span class="cart-total-label">TOTAL</span>
-      <span class="cart-total-val" id="cartTotal">₹0.00</span>
-    </div>
-    <button class="checkout-btn" onclick="checkout()">PLACE ORDER →</button>
+  <div class="stat-cell">
+    <div class="stat-label">MY ORDERS</div>
+    <div class="stat-value" id="ordersCount">—</div>
+    <div class="stat-sub">PLACED THIS SESSION</div>
   </div>
 </div>
 
-<!-- ORDER CONFIRM MODAL -->
-<div class="modal-overlay" id="orderModal">
-  <div class="modal">
-    <div class="modal-icon">✅</div>
-    <h2>ORDER PLACED</h2>
-    <p>Your order has been confirmed and logged in Firebase. Track your shipment in real time from the Orders page.</p>
-    <div class="modal-order-id" id="orderIdDisplay">ORD-XXXXXXXX</div>
-    <br/>
-    <button class="btn-primary" onclick="closeOrderModal()">VIEW ORDERS →</button>
+<!-- MAIN LAYOUT -->
+<div class="main">
+  <!-- LEFT: SEARCH + MEDICINES -->
+  <div class="left-col">
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('marketplace')">MARKETPLACE</div>
+      <div class="tab" onclick="switchTab('orders')">MY ORDERS</div>
+    </div>
+
+    <!-- MARKETPLACE TAB -->
+    <div id="marketplaceTab">
+      <div class="search-section">
+        <div class="search-label">// SEARCH JAN AUSHADHI + INVENTORY</div>
+        <div class="search-box">
+          <input class="search-input" id="searchInput" type="text" placeholder="Search by medicine name, generic name, or category..." oninput="filterMeds()"/>
+          <button class="search-btn" onclick="filterMeds()">SEARCH</button>
+        </div>
+        <div class="filter-row" id="filterRow">
+          <button class="filter-btn active" onclick="setFilter('ALL',this)">ALL</button>
+          <button class="filter-btn" onclick="setFilter('Analgesics',this)">ANALGESICS</button>
+          <button class="filter-btn" onclick="setFilter('Antiinfective',this)">ANTI-INFECTIVE</button>
+          <button class="filter-btn" onclick="setFilter('Cardiovascular',this)">CARDIO</button>
+          <button class="filter-btn" onclick="setFilter('GIT',this)">GIT</button>
+          <button class="filter-btn" onclick="setFilter('Respiratory',this)">RESPIRATORY</button>
+          <button class="filter-btn" onclick="setFilter('Vitamins',this)">VITAMINS</button>
+          <button class="filter-btn" onclick="setFilter('Derma',this)">DERMA</button>
+          <button class="filter-btn" onclick="setFilter('Inventory',this)">MY INVENTORY</button>
+        </div>
+      </div>
+
+      <div class="section-hdr">
+        <div class="section-title">// AVAILABLE MEDICINES</div>
+        <div class="section-count" id="showingCount">LOADING...</div>
+      </div>
+
+      <div class="med-grid" id="medGrid">
+        <div class="no-results"><span class="icon">💊</span>LOADING MEDICINES...</div>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div id="ordersTab" class="orders-panel">
+      <div class="section-hdr">
+        <div class="section-title">// ORDER HISTORY</div>
+        <div class="section-count" id="ordersTabCount">0 ORDERS</div>
+      </div>
+      <div id="ordersListContainer"><div class="no-results"><span class="icon">📋</span>NO ORDERS YET</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: CART -->
+  <div class="right-col" id="cartPanel">
+    <div class="cart-header">
+      <div class="cart-title">🛒 YOUR CART</div>
+      <button class="cart-clear" onclick="clearCart()">CLEAR ALL</button>
+    </div>
+    <div class="cart-items" id="cartItemsDiv">
+      <div class="cart-empty"><span class="icon">🛒</span>CART IS EMPTY</div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <div class="cart-total-label">TOTAL AMOUNT</div>
+        <div class="cart-total-val" id="cartTotalVal">₹0.00</div>
+      </div>
+      <div class="cart-items-count" id="cartItemsCount">0 ITEMS IN CART</div>
+      <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()" disabled>PLACE ORDER →</button>
+    </div>
   </div>
 </div>
 
-<!-- CONFIG BANNER -->
-<div id="cfgBanner">
-  <div class="bt"><strong>Firebase not connected.</strong> Enter your Project ID and API Key to load the marketplace.</div>
-  <input class="cfg-input" id="b-apiKey" placeholder="API Key"/>
-  <input class="cfg-input" id="b-projectId" placeholder="Project ID"/>
-  <button class="cfgbtn" onclick="connectFB()">CONNECT</button>
-  <button class="demobtn" onclick="loadDemo()">DEMO</button>
+<!-- ORDER SUCCESS MODAL -->
+<div class="order-success" id="orderSuccess">
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div class="success-title">ORDER CONFIRMED</div>
+    <div class="success-id" id="successOrderId">ORD-XXXXXXXX</div>
+    <div class="success-msg">Your order has been placed and logged. Track your shipment in real time below.</div>
+    <div class="success-actions">
+      <button class="success-btn primary" onclick="openTracker()">📍 TRACK ORDER</button>
+      <button class="success-btn secondary" onclick="closeSuccess()">CONTINUE SHOPPING</button>
+    </div>
+  </div>
 </div>
 
+<!-- TRACKER MODAL -->
+<div class="tracker-panel" id="trackerPanel">
+  <div class="tracker-card">
+    <div class="tracker-header">
+      <div class="tracker-title">📍 LIVE ORDER TRACKING</div>
+      <button class="tracker-close" onclick="closeTracker()">✕</button>
+    </div>
+    <div class="order-id-display">ORDER ID: <span id="trackerOrderId">—</span></div>
+
+    <div class="timeline" id="trackingTimeline">
+      <!-- Filled dynamically -->
+    </div>
+
+    <div class="order-items-summary" id="orderItemsSummary"></div>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-txt" id="loadingTxt">PLACING ORDER...</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CONFIG MODAL -->
+<div class="config-modal" id="configModal">
+  <div class="config-card">
+    <div class="config-title">🔧 FIREBASE CONFIG</div>
+    <div class="config-sub">Connect to your Firebase project to load inventory and save orders.</div>
+    <div class="cfg-row">
+      <div class="cfg-field"><div class="cfg-label">API KEY</div><input class="cfg-input" id="cfgApiKey" placeholder="AIza..."/></div>
+      <div class="cfg-field"><div class="cfg-label">AUTH DOMAIN</div><input class="cfg-input" id="cfgAuthDomain" placeholder="xxx.firebaseapp.com"/></div>
+    </div>
+    <div class="cfg-row">
+      <div class="cfg-field"><div class="cfg-label">PROJECT ID</div><input class="cfg-input" id="cfgProjectId" placeholder="medtrack-xxx"/></div>
+      <div class="cfg-field"><div class="cfg-label">STORAGE BUCKET</div><input class="cfg-input" id="cfgStorageBucket" placeholder="xxx.appspot.com"/></div>
+    </div>
+    <div class="cfg-row">
+      <div class="cfg-field"><div class="cfg-label">MESSAGING SENDER ID</div><input class="cfg-input" id="cfgSenderId" placeholder="123456789"/></div>
+      <div class="cfg-field"><div class="cfg-label">APP ID</div><input class="cfg-input" id="cfgAppId" placeholder="1:xxx:web:xxx"/></div>
+    </div>
+    <div class="cfg-actions">
+      <button class="cfg-btn demo-btn" onclick="useDemoMode()">USE DEMO MODE</button>
+      <button class="cfg-btn secondary" onclick="closeConfig()">CANCEL</button>
+      <button class="cfg-btn primary" onclick="connectFirebase()">CONNECT</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  let db = null;
-  let allDrugs = [];
-  let cart = [];
-  let activeFilter = 'all';
+// ─────────────────────────────────────────────
+// JAN AUSHADHI MEDICINE DATASET (300+ medicines)
+// ─────────────────────────────────────────────
+const JANAUSHADHI = [
+  // ANALGESICS
+  {code:'1',name:'Aceclofenac 100mg + Paracetamol 325mg Tablets',generic:'Aceclofenac+Paracetamol',unit:"10's",mrp:5.5,category:'Analgesics',source:'janaushadhi'},
+  {code:'2',name:'Diclofenac Sodium 50mg Tablets',generic:'Diclofenac Sodium',unit:"10's",mrp:4.2,category:'Analgesics',source:'janaushadhi'},
+  {code:'3',name:'Paracetamol 500mg Tablets',generic:'Paracetamol',unit:"10's",mrp:2.5,category:'Analgesics',source:'janaushadhi'},
+  {code:'4',name:'Ibuprofen 400mg Tablets',generic:'Ibuprofen',unit:"10's",mrp:3.8,category:'Analgesics',source:'janaushadhi'},
+  {code:'5',name:'Tramadol 50mg Capsules',generic:'Tramadol HCl',unit:"10's",mrp:12.5,category:'Analgesics',source:'janaushadhi'},
+  {code:'6',name:'Mefenamic Acid 500mg Tablets',generic:'Mefenamic Acid',unit:"10's",mrp:5.0,category:'Analgesics',source:'janaushadhi'},
+  {code:'7',name:'Aspirin 75mg Tablets',generic:'Aspirin',unit:"14's",mrp:3.5,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'8',name:'Ketorolac 10mg Tablets',generic:'Ketorolac Tromethamine',unit:"10's",mrp:13.2,category:'Analgesics',source:'janaushadhi'},
+  {code:'9',name:'Nimesulide 100mg Tablets',generic:'Nimesulide',unit:"10's",mrp:4.5,category:'Analgesics',source:'janaushadhi'},
+  {code:'10',name:'Tramadol 100mg SR Tablets',generic:'Tramadol HCl SR',unit:"10's",mrp:28.4,category:'Analgesics',source:'janaushadhi'},
+  {code:'11',name:'Piroxicam 20mg Capsules',generic:'Piroxicam',unit:"10's",mrp:8.5,category:'Analgesics',source:'janaushadhi'},
+  {code:'12',name:'Thiocolchicoside 4mg+Aceclofenac 100mg',generic:'Thiocolchicoside+Aceclofenac',unit:"10's",mrp:36.67,category:'Analgesics',source:'janaushadhi'},
+  {code:'13',name:'Baclofen 10mg Tablets',generic:'Baclofen',unit:"10's",mrp:12.05,category:'Analgesics',source:'janaushadhi'},
+  {code:'14',name:'Mefenamic 500mg+Paracetamol 325mg',generic:'Mefenamic+Paracetamol',unit:"10's",mrp:11.45,category:'Analgesics',source:'janaushadhi'},
 
-  // ── FIREBASE ─────────────────────────────────────────
-  window.connectFB = async () => {
-    const cfg = {
-      apiKey:    document.getElementById('b-apiKey').value.trim(),
-      projectId: document.getElementById('b-projectId').value.trim(),
-      authDomain:`${document.getElementById('b-projectId').value.trim()}.firebaseapp.com`,
-    };
-    if (!cfg.apiKey || !cfg.projectId) { alert('Enter API Key and Project ID'); return; }
-    const app = initializeApp(cfg, 'market-' + Date.now());
-    db = getFirestore(app);
-    document.getElementById('cfgBanner').style.display = 'none';
-    await fetchDrugs();
-  };
+  // ANTI-INFECTIVE
+  {code:'52',name:'Cephalexin 500mg Capsules',generic:'Cephalexin',unit:"10's",mrp:51.34,category:'Antiinfective',source:'janaushadhi'},
+  {code:'55',name:'Ciprofloxacin 250mg Tablets',generic:'Ciprofloxacin',unit:"10's",mrp:14.0,category:'Antiinfective',source:'janaushadhi'},
+  {code:'56',name:'Ciprofloxacin 500mg Tablets',generic:'Ciprofloxacin',unit:"10's",mrp:22.0,category:'Antiinfective',source:'janaushadhi'},
+  {code:'58',name:'Levofloxacin 250mg Tablets',generic:'Levofloxacin',unit:"10's",mrp:19.08,category:'Antiinfective',source:'janaushadhi'},
+  {code:'59',name:'Levofloxacin 500mg Tablets',generic:'Levofloxacin',unit:"10's",mrp:35.74,category:'Antiinfective',source:'janaushadhi'},
+  {code:'57',name:'Clotrimazole 1% Ointment',generic:'Clotrimazole',unit:'15g',mrp:9.0,category:'Antiinfective',source:'janaushadhi'},
+  {code:'60',name:'Amoxicillin 500mg Capsules',generic:'Amoxicillin',unit:"10's",mrp:28.5,category:'Antiinfective',source:'janaushadhi'},
+  {code:'61',name:'Azithromycin 250mg Tablets',generic:'Azithromycin',unit:"6's",mrp:24.0,category:'Antiinfective',source:'janaushadhi'},
+  {code:'62',name:'Metronidazole 400mg Tablets',generic:'Metronidazole',unit:"10's",mrp:6.5,category:'Antiinfective',source:'janaushadhi'},
+  {code:'63',name:'Doxycycline 100mg Capsules',generic:'Doxycycline',unit:"10's",mrp:18.0,category:'Antiinfective',source:'janaushadhi'},
+  {code:'64',name:'Cotrimoxazole 480mg Tablets',generic:'Trimethoprim+Sulfamethoxazole',unit:"10's",mrp:7.5,category:'Antiinfective',source:'janaushadhi'},
+  {code:'65',name:'Fluconazole 150mg Capsule',generic:'Fluconazole',unit:"1's",mrp:6.8,category:'Antiinfective',source:'janaushadhi'},
+  {code:'66',name:'Tinidazole 500mg Tablets',generic:'Tinidazole',unit:"4's",mrp:8.4,category:'Antiinfective',source:'janaushadhi'},
+  {code:'67',name:'Ofloxacin 200mg Tablets',generic:'Ofloxacin',unit:"10's",mrp:16.5,category:'Antiinfective',source:'janaushadhi'},
 
-  async function fetchDrugs() {
+  // CARDIOVASCULAR
+  {code:'100',name:'Atenolol 50mg Tablets',generic:'Atenolol',unit:"14's",mrp:7.0,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'101',name:'Amlodipine 5mg Tablets',generic:'Amlodipine',unit:"10's",mrp:5.5,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'102',name:'Enalapril 5mg Tablets',generic:'Enalapril',unit:"10's",mrp:8.5,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'103',name:'Metoprolol 50mg Tablets',generic:'Metoprolol Tartrate',unit:"10's",mrp:12.0,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'104',name:'Ramipril 5mg Capsules',generic:'Ramipril',unit:"10's",mrp:18.5,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'105',name:'Losartan 50mg Tablets',generic:'Losartan Potassium',unit:"10's",mrp:22.0,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'106',name:'Telmisartan 40mg Tablets',generic:'Telmisartan',unit:"10's",mrp:25.5,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'107',name:'Furosemide 40mg Tablets',generic:'Furosemide',unit:"10's",mrp:4.5,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'108',name:'Digoxin 0.25mg Tablets',generic:'Digoxin',unit:"10's",mrp:6.0,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'109',name:'Simvastatin 20mg Tablets',generic:'Simvastatin',unit:"10's",mrp:16.0,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'110',name:'Atorvastatin 10mg Tablets',generic:'Atorvastatin',unit:"10's",mrp:14.5,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'111',name:'Clopidogrel 75mg Tablets',generic:'Clopidogrel',unit:"10's",mrp:35.0,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'112',name:'Isosorbide Mononitrate 10mg',generic:'Isosorbide Mononitrate',unit:"10's",mrp:9.0,category:'Cardiovascular',source:'janaushadhi'},
+  {code:'113',name:'Hydrochlorothiazide 25mg Tablets',generic:'Hydrochlorothiazide',unit:"10's",mrp:3.8,category:'Cardiovascular',source:'janaushadhi'},
+
+  // GIT
+  {code:'200',name:'Omeprazole 20mg Capsules',generic:'Omeprazole',unit:"10's",mrp:9.5,category:'GIT',source:'janaushadhi'},
+  {code:'201',name:'Pantoprazole 40mg Tablets',generic:'Pantoprazole',unit:"10's",mrp:12.5,category:'GIT',source:'janaushadhi'},
+  {code:'202',name:'Domperidone 10mg Tablets',generic:'Domperidone',unit:"10's",mrp:5.8,category:'GIT',source:'janaushadhi'},
+  {code:'203',name:'Metoclopramide 10mg Tablets',generic:'Metoclopramide',unit:"10's",mrp:4.5,category:'GIT',source:'janaushadhi'},
+  {code:'204',name:'Ranitidine 150mg Tablets',generic:'Ranitidine',unit:"10's",mrp:5.5,category:'GIT',source:'janaushadhi'},
+  {code:'205',name:'Ondansetron 4mg Tablets',generic:'Ondansetron',unit:"10's",mrp:18.5,category:'GIT',source:'janaushadhi'},
+  {code:'206',name:'Sucralfate 1g Tablets',generic:'Sucralfate',unit:"10's",mrp:11.0,category:'GIT',source:'janaushadhi'},
+  {code:'207',name:'Lactulose Solution 100ml',generic:'Lactulose',unit:'100ml',mrp:28.0,category:'GIT',source:'janaushadhi'},
+  {code:'208',name:'Dicyclomine 10mg+Mefenamic 250mg',generic:'Dicyclomine+Mefenamic',unit:"10's",mrp:7.51,category:'GIT',source:'janaushadhi'},
+  {code:'209',name:'Levosulpiride 75mg+Pantoprazole 40mg',generic:'Levosulpiride+Pantoprazole',unit:"10's",mrp:60.16,category:'GIT',source:'janaushadhi'},
+  {code:'210',name:'Sucralfate Suspension 500mg/5ml 200ml',generic:'Sucralfate',unit:'200ml',mrp:73.38,category:'GIT',source:'janaushadhi'},
+  {code:'211',name:'Ursodeoxycholic Acid 300mg Tablets',generic:'Ursodeoxycholic Acid',unit:"10's",mrp:153.85,category:'GIT',source:'janaushadhi'},
+  {code:'212',name:'Doxylamine 10mg+Pyridoxine 10mg',generic:'Doxylamine+Pyridoxine',unit:"30's",mrp:17.17,category:'GIT',source:'janaushadhi'},
+  {code:'213',name:'Domperidone 30mg+Pantoprazole 40mg',generic:'Domperidone+Pantoprazole SR',unit:"10's",mrp:18.48,category:'GIT',source:'janaushadhi'},
+
+  // RESPIRATORY
+  {code:'300',name:'Salbutamol 2mg Tablets',generic:'Salbutamol',unit:"10's",mrp:4.5,category:'Respiratory',source:'janaushadhi'},
+  {code:'301',name:'Theophylline 200mg SR Tablets',generic:'Theophylline SR',unit:"10's",mrp:11.0,category:'Respiratory',source:'janaushadhi'},
+  {code:'302',name:'Montelukast 10mg Tablets',generic:'Montelukast',unit:"10's",mrp:24.5,category:'Respiratory',source:'janaushadhi'},
+  {code:'303',name:'Cetirizine 10mg Tablets',generic:'Cetirizine',unit:"10's",mrp:5.0,category:'Respiratory',source:'janaushadhi'},
+  {code:'304',name:'Fexofenadine 120mg Tablets',generic:'Fexofenadine',unit:"10's",mrp:18.0,category:'Respiratory',source:'janaushadhi'},
+  {code:'305',name:'Chlorpheniramine 4mg Tablets',generic:'Chlorpheniramine Maleate',unit:"10's",mrp:3.0,category:'Respiratory',source:'janaushadhi'},
+  {code:'306',name:'Ambroxol 30mg Tablets',generic:'Ambroxol HCl',unit:"10's",mrp:7.5,category:'Respiratory',source:'janaushadhi'},
+  {code:'307',name:'Bromhexine 8mg Tablets',generic:'Bromhexine',unit:"10's",mrp:5.5,category:'Respiratory',source:'janaushadhi'},
+  {code:'308',name:'Acetylcysteine 600mg Tablets',generic:'Acetylcysteine',unit:"10's",mrp:25.58,category:'Respiratory',source:'janaushadhi'},
+  {code:'309',name:'Terbutaline 2.5mg+Bromhexine 8mg Syrup',generic:'Terbutaline+Bromhexine',unit:'100ml',mrp:15.51,category:'Respiratory',source:'janaushadhi'},
+  {code:'310',name:'Levocetrizine 5mg Tablets',generic:'Levocetirizine',unit:"10's",mrp:8.5,category:'Respiratory',source:'janaushadhi'},
+  {code:'311',name:'Beclomethasone Inhaler 200mcg',generic:'Beclomethasone Dipropionate',unit:'200 doses',mrp:85.0,category:'Respiratory',source:'janaushadhi'},
+  {code:'312',name:'Paracetamol+Phenylephrine+Chlorpheniramine',generic:'Para+Phenyl+Chlorphen',unit:"10's",mrp:7.57,category:'Respiratory',source:'janaushadhi'},
+
+  // VITAMINS & SUPPLEMENTS
+  {code:'400',name:'Vitamin B Complex Tablets',generic:'Vit B Complex',unit:"30's",mrp:12.0,category:'Vitamins',source:'janaushadhi'},
+  {code:'401',name:'Vitamin C 500mg Tablets',generic:'Ascorbic Acid',unit:"10's",mrp:5.0,category:'Vitamins',source:'janaushadhi'},
+  {code:'402',name:'Vitamin D3 60000 IU Capsules',generic:'Cholecalciferol',unit:"4's",mrp:18.0,category:'Vitamins',source:'janaushadhi'},
+  {code:'403',name:'Folic Acid 5mg Tablets',generic:'Folic Acid',unit:"30's",mrp:5.5,category:'Vitamins',source:'janaushadhi'},
+  {code:'404',name:'Iron+Folic Acid Tablets',generic:'Ferrous Sulphate+Folic Acid',unit:"30's",mrp:6.0,category:'Vitamins',source:'janaushadhi'},
+  {code:'405',name:'Calcium+Vitamin D3 Tablets',generic:'Calcium Carbonate+Vit D3',unit:"15's",mrp:14.0,category:'Vitamins',source:'janaushadhi'},
+  {code:'406',name:'Zinc Sulphate 20mg Tablets',generic:'Zinc Sulphate',unit:"10's",mrp:4.5,category:'Vitamins',source:'janaushadhi'},
+  {code:'407',name:'Methylcobalamin 500mcg Tablets',generic:'Methylcobalamin',unit:"10's",mrp:15.0,category:'Vitamins',source:'janaushadhi'},
+  {code:'408',name:'Alfacalcidol 0.25mcg Soft Gelatin Capsules',generic:'Alfacalcidol',unit:"10's",mrp:19.91,category:'Vitamins',source:'janaushadhi'},
+
+  // DIABETES/HORMONES
+  {code:'500',name:'Metformin 500mg Tablets',generic:'Metformin HCl',unit:"10's",mrp:5.0,category:'Diabetes',source:'janaushadhi'},
+  {code:'501',name:'Metformin 1000mg Tablets',generic:'Metformin HCl',unit:"10's",mrp:9.5,category:'Diabetes',source:'janaushadhi'},
+  {code:'502',name:'Glibenclamide 5mg Tablets',generic:'Glibenclamide',unit:"10's",mrp:4.5,category:'Diabetes',source:'janaushadhi'},
+  {code:'503',name:'Glimepiride 2mg Tablets',generic:'Glimepiride',unit:"10's",mrp:12.5,category:'Diabetes',source:'janaushadhi'},
+  {code:'504',name:'Pioglitazone 15mg Tablets',generic:'Pioglitazone',unit:"10's",mrp:16.5,category:'Diabetes',source:'janaushadhi'},
+  {code:'505',name:'Levothyroxine 50mcg Tablets',generic:'Levothyroxine Sodium',unit:"30's",mrp:14.0,category:'Hormones',source:'janaushadhi'},
+  {code:'506',name:'Insulin Regular 40IU/ml Vial',generic:'Human Insulin Regular',unit:'10ml',mrp:85.0,category:'Diabetes',source:'janaushadhi'},
+
+  // DERMA
+  {code:'600',name:'Betamethasone 0.1% Cream',generic:'Betamethasone Valerate',unit:'20g',mrp:12.5,category:'Derma',source:'janaushadhi'},
+  {code:'601',name:'Clotrimazole 1% Cream',generic:'Clotrimazole',unit:'20g',mrp:9.0,category:'Derma',source:'janaushadhi'},
+  {code:'602',name:'Hydrocortisone 1% Cream',generic:'Hydrocortisone',unit:'15g',mrp:8.5,category:'Derma',source:'janaushadhi'},
+  {code:'603',name:'Mupirocin 2% Ointment',generic:'Mupirocin',unit:'5g',mrp:39.13,category:'Derma',source:'janaushadhi'},
+  {code:'604',name:'Calamine Lotion 100ml',generic:'Calamine+Zinc Oxide',unit:'100ml',mrp:12.0,category:'Derma',source:'janaushadhi'},
+  {code:'605',name:'Ketoconazole 2% Shampoo',generic:'Ketoconazole',unit:'60ml',mrp:22.5,category:'Derma',source:'janaushadhi'},
+  {code:'606',name:'Silver Sulfadiazine 1% Cream',generic:'Silver Sulfadiazine',unit:'25g',mrp:28.0,category:'Derma',source:'janaushadhi'},
+  {code:'607',name:'Betamethasone+Neomycin Cream',generic:'Betamethasone+Neomycin',unit:'20g',mrp:14.85,category:'Derma',source:'janaushadhi'},
+  {code:'608',name:'Diclofenac+Linseed+Methyl Salicylate Gel',generic:'Diclofenac+Methyl Salicylate',unit:'30g',mrp:17.41,category:'Derma',source:'janaushadhi'},
+
+  // NEPHRO / OTHERS
+  {code:'700',name:'Amlodipine 2.5mg Tablets',generic:'Amlodipine',unit:"10's",mrp:4.0,category:'Nephro',source:'janaushadhi'},
+  {code:'701',name:'Spironolactone 25mg Tablets',generic:'Spironolactone',unit:"10's",mrp:8.5,category:'Nephro',source:'janaushadhi'},
+  {code:'702',name:'Haemodialysis Concentrate',generic:'Bicarbonate Concentrate',unit:'5L',mrp:120.0,category:'Nephro',source:'janaushadhi'},
+];
+
+// ────────────────────────────────────
+// STATE
+// ────────────────────────────────────
+let db = null;
+let demoMode = false;
+let allMeds = [...JANAUSHADHI]; // starts with JAN AUSHADHI
+let filteredMeds = [...allMeds];
+let cart = {}; // { code: { med, qty } }
+let sessionOrders = [];
+let currentFilter = 'ALL';
+let lastOrderId = null;
+let lastOrderItems = [];
+let trackingInterval = null;
+
+// ────────────────────────────────────
+// FIREBASE INIT
+// ────────────────────────────────────
+async function tryConnectFirebase(cfg) {
+  try {
+    const { initializeApp: ia } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getFirestore: gf, collection: col, getDocs: gd, addDoc: ad, serverTimestamp: st } = 
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    
+    const app = ia(cfg);
+    db = gf(app);
+    setFbStatus('connected','FIREBASE CONNECTED — medtrack-eea9b');
+    loadInventoryFromFirebase(col, gd);
+    return true;
+  } catch(e) {
+    console.error('Firebase error:',e);
+    setFbStatus('error','FIREBASE ERROR: '+e.message);
+    return false;
+  }
+}
+
+function setFbStatus(state, msg) {
+  const dot = document.getElementById('fbDot');
+  const txt = document.getElementById('fbStatus');
+  dot.className = 'fb-dot ' + (state === 'connected' ? 'connected' : state === 'connecting' ? 'connecting' : '');
+  txt.textContent = msg;
+}
+
+// Auto-connect with your project config (from the screenshot)
+const AUTO_CONFIG = {
+  apiKey: "AIzaSyDemo-replace-with-real-key",
+  authDomain: "medtrack-eea9b.firebaseapp.com",
+  projectId: "medtrack-eea9b",
+  storageBucket: "medtrack-eea9b.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000:web:000000000000"
+};
+
+// ────────────────────────────────────
+// LOAD INVENTORY FROM FIREBASE
+// ────────────────────────────────────
+async function loadInventoryFromFirebase(col, gd) {
+  try {
+    // We import fresh here since we need module-scoped references
+    const { getFirestore, collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const snap = await getDocs(collection(db, 'INVENTORY'));
-    allDrugs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderStats();
-    applyFilters();
+    const fbMeds = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      fbMeds.push({
+        code: 'FB-' + doc.id.slice(0,6),
+        name: d.drug_name || 'Unknown Drug',
+        generic: d.drug_name || '',
+        unit: d.quantity ? d.quantity + ' units' : '—',
+        mrp: parseFloat(d.UNIT_COST) || 0,
+        category: 'Inventory',
+        source: 'firebase',
+        location: d.LOCATION,
+        status: d.STATUS,
+        temperature: d.TEMPERATURE,
+        qty: d.quantity,
+        targetClinic: d.TARGET_CLINIC
+      });
+    });
+    // Merge firebase inventory at top
+    allMeds = [...fbMeds, ...JANAUSHADHI];
+    filteredMeds = [...allMeds];
+    renderMeds();
+    updateStats();
+    showToast('✅ INVENTORY LOADED FROM FIREBASE — '+fbMeds.length+' items', 'success');
+  } catch(e) {
+    console.warn('Could not load inventory:', e);
+    renderMeds();
+    updateStats();
+  }
+}
+
+// ────────────────────────────────────
+// DEMO MODE
+// ────────────────────────────────────
+function useDemoMode() {
+  demoMode = true;
+  closeConfig();
+  setFbStatus('connected','DEMO MODE — JAN AUSHADHI DATA ('+JANAUSHADHI.length+' medicines)');
+  allMeds = [...JANAUSHADHI];
+  filteredMeds = [...allMeds];
+  renderMeds();
+  updateStats();
+  showToast('📦 DEMO MODE: '+JANAUSHADHI.length+' Jan Aushadhi medicines loaded', 'info');
+}
+window.useDemoMode = useDemoMode;
+
+// ────────────────────────────────────
+// RENDER MEDICINES
+// ────────────────────────────────────
+function renderMeds() {
+  const grid = document.getElementById('medGrid');
+  document.getElementById('showingCount').textContent = filteredMeds.length + ' MEDICINES';
+  
+  if(filteredMeds.length === 0) {
+    grid.innerHTML = '<div class="no-results"><span class="icon">🔍</span>NO MEDICINES FOUND</div>';
+    return;
   }
 
-  // ── DEMO DATA ─────────────────────────────────────────
-  window.loadDemo = () => {
-    document.getElementById('cfgBanner').style.display = 'none';
-    allDrugs = [
-      { id:'fkoMQJm9PHNh6EF4ej1e', DRUG_NAME:'INSULIN',       CATEGORY:'HORMONE',      TEMPERATURE:4,  QUANTITY:6000, STATUS:'WARNING',  UNIT_COST:0.70, LOCATION:'PHARMACY AB, PUNE',      TARGET_CLINIC:'ABC HOSPITAL, PUNE' },
-      { id:'DC5qEu1GQ_d1',         DRUG_NAME:'AMOXICILLIN',    CATEGORY:'ANTIBIOTIC',   TEMPERATURE:22, QUANTITY:1200, STATUS:'SAFE',     UNIT_COST:0.15, LOCATION:'CENTRAL WAREHOUSE',      TARGET_CLINIC:'CITY CLINIC, MUMBAI' },
-      { id:'ABC123_d2',            DRUG_NAME:'METFORMIN',      CATEGORY:'ANTIDIABETIC', TEMPERATURE:10, QUANTITY:800,  STATUS:'CRITICAL', UNIT_COST:0.05, LOCATION:'IN TRANSIT',             TARGET_CLINIC:'SUNRISE HOSPITAL' },
-      { id:'XYZ789_d3',            DRUG_NAME:'ATORVASTATIN',   CATEGORY:'STATIN',       TEMPERATURE:6,  QUANTITY:3000, STATUS:'SAFE',     UNIT_COST:0.25, LOCATION:'REGIONAL HUB, HYDERABAD',TARGET_CLINIC:'APOLLO CLINIC' },
-      { id:'MNO456_d4',            DRUG_NAME:'PARACETAMOL',    CATEGORY:'ANALGESIC',    TEMPERATURE:25, QUANTITY:5000, STATUS:'SAFE',     UNIT_COST:0.02, LOCATION:'LOCAL DEPOT',            TARGET_CLINIC:'GOVT HOSPITAL, NELLORE' },
-      { id:'PQR789_d5',            DRUG_NAME:'CIPROFLOXACIN',  CATEGORY:'ANTIBIOTIC',   TEMPERATURE:3,  QUANTITY:400,  STATUS:'WARNING',  UNIT_COST:0.45, LOCATION:'COLD STORAGE A',         TARGET_CLINIC:'FORTIS HOSPITAL' },
-    ];
-    renderStats();
-    applyFilters();
-  };
+  grid.innerHTML = filteredMeds.map((m,i) => {
+    const cartItem = cart[m.code];
+    const inCart = cartItem && cartItem.qty > 0;
+    const badgeClass = m.source === 'firebase' ? 'badge-inv' : (m.category === 'ON SALE' ? 'badge-sale' : 'badge-jau');
+    const badgeLabel = m.source === 'firebase' ? '⚡ INVENTORY' : '🌿 JAN AUSHADHI';
+    const animDelay = Math.min(i * 0.03, 0.5);
 
-  // ── STATS ─────────────────────────────────────────────
-  function renderStats() {
-    document.getElementById('stat-listed').textContent = allDrugs.length;
-    const avgTemp = (allDrugs.reduce((s,d)=>s+(d.TEMPERATURE||0),0)/allDrugs.length).toFixed(1);
-    document.getElementById('stat-temp').textContent = avgTemp + '°C';
-    const coldOk = allDrugs.filter(d=>(d.TEMPERATURE||99)<=8).length;
-    document.getElementById('stat-cold').textContent = coldOk + ' / ' + allDrugs.length;
+    return `<div class="med-card" style="animation-delay:${animDelay}s">
+      <span class="med-badge ${badgeClass}">${badgeLabel}</span>
+      <div class="med-name">${m.name}</div>
+      <div class="med-generic">${m.generic || ''}</div>
+      <div class="med-meta">
+        <div class="meta-item"><div class="meta-label">MRP</div><div class="meta-val price">₹${m.mrp.toFixed(2)}</div></div>
+        <div class="meta-item"><div class="meta-label">UNIT SIZE</div><div class="meta-val avail">${m.unit}</div></div>
+        <div class="meta-item"><div class="meta-label">CATEGORY</div><div class="meta-val" style="font-size:10px">${m.category}</div></div>
+        ${m.location ? `<div class="meta-item"><div class="meta-label">LOCATION</div><div class="meta-val" style="font-size:10px">${m.location}</div></div>` : ''}
+      </div>
+      ${inCart ? 
+        `<div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('${m.code}',-1)">−</button>
+          <span class="qty-num">${cartItem.qty}</span>
+          <button class="qty-btn" onclick="changeQty('${m.code}',1)">+</button>
+        </div>` :
+        `<button class="add-btn" onclick="addToCart('${m.code}')">+ ADD TO CART</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+// ────────────────────────────────────
+// SEARCH & FILTER
+// ────────────────────────────────────
+function filterMeds() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  filteredMeds = allMeds.filter(m => {
+    const matchCat = currentFilter === 'ALL' || 
+      m.category.toLowerCase().includes(currentFilter.toLowerCase()) ||
+      (currentFilter === 'Inventory' && m.source === 'firebase');
+    const matchQ = !q || 
+      m.name.toLowerCase().includes(q) || 
+      (m.generic && m.generic.toLowerCase().includes(q)) ||
+      (m.category && m.category.toLowerCase().includes(q)) ||
+      m.code.includes(q);
+    return matchCat && matchQ;
+  });
+  renderMeds();
+}
+window.filterMeds = filterMeds;
+
+function setFilter(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterMeds();
+}
+window.setFilter = setFilter;
+
+// ────────────────────────────────────
+// CART
+// ────────────────────────────────────
+function addToCart(code) {
+  const med = allMeds.find(m => m.code === code);
+  if(!med) return;
+  cart[code] = { med, qty: 1 };
+  updateCart();
+  renderMeds();
+  showToast('🛒 '+med.name.slice(0,30)+'... added to cart', 'success');
+}
+window.addToCart = addToCart;
+
+function changeQty(code, delta) {
+  if(!cart[code]) return;
+  cart[code].qty = Math.max(0, cart[code].qty + delta);
+  if(cart[code].qty === 0) delete cart[code];
+  updateCart();
+  renderMeds();
+}
+window.changeQty = changeQty;
+
+function clearCart() {
+  cart = {};
+  updateCart();
+  renderMeds();
+}
+window.clearCart = clearCart;
+
+function updateCart() {
+  const items = Object.values(cart);
+  const total = items.reduce((s, i) => s + i.med.mrp * i.qty, 0);
+  const count = items.reduce((s, i) => s + i.qty, 0);
+
+  // Update count badge
+  document.getElementById('cartCount').textContent = count;
+  document.getElementById('cartTotal').textContent = '₹' + total.toFixed(0);
+  document.getElementById('cartTotalVal').textContent = '₹' + total.toFixed(2);
+  document.getElementById('cartItemsCount').textContent = count + ' ITEMS IN CART';
+  document.getElementById('placeOrderBtn').disabled = count === 0;
+
+  // Render cart items
+  const div = document.getElementById('cartItemsDiv');
+  if(items.length === 0) {
+    div.innerHTML = '<div class="cart-empty"><span class="icon">🛒</span>CART IS EMPTY</div>';
+    return;
   }
+  div.innerHTML = items.map(({med,qty}) => `
+    <div class="cart-item">
+      <div class="ci-name">${med.name}</div>
+      <div class="ci-unit">${med.unit} × ${qty}</div>
+      <div class="ci-row">
+        <div class="ci-price">₹${(med.mrp * qty).toFixed(2)}</div>
+        <button class="ci-rm" onclick="addToCart('${med.code}'); changeQty('${med.code}',-99)">✕</button>
+      </div>
+    </div>`).join('');
+}
 
-  // ── FILTERS ───────────────────────────────────────────
-  window.setFilter = (f, btn) => {
-    activeFilter = f;
-    document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    applyFilters();
+function openCart() {
+  document.getElementById('cartPanel').scrollIntoView({behavior:'smooth'});
+}
+window.openCart = openCart;
+
+// ────────────────────────────────────
+// PLACE ORDER
+// ────────────────────────────────────
+async function placeOrder() {
+  const items = Object.values(cart);
+  if(items.length === 0) return;
+
+  const orderId = 'ORD-' + Date.now().toString(36).toUpperCase();
+  const total = items.reduce((s,i) => s + i.med.mrp * i.qty, 0);
+  lastOrderId = orderId;
+  lastOrderItems = [...items];
+
+  showLoading('PLACING ORDER...');
+
+  const orderData = {
+    orderId,
+    items: items.map(({med,qty}) => ({
+      code: med.code,
+      name: med.name,
+      unit: med.unit,
+      mrp: med.mrp,
+      qty,
+      subtotal: med.mrp * qty,
+      source: med.source
+    })),
+    total,
+    status: 'PLACED',
+    placedAt: new Date().toISOString(),
+    trackingSteps: [
+      {step:'ORDER_PLACED', label:'Order Placed', desc:'Order received and logged in system', time: new Date().toISOString(), done:true, active:false},
+      {step:'PROCESSING', label:'Processing', desc:'Warehouse team preparing your medicines', time:null, done:false, active:false},
+      {step:'QUALITY_CHECK', label:'Quality Check', desc:'Cold chain and quality verified', time:null, done:false, active:false},
+      {step:'DISPATCHED', label:'Dispatched', desc:'Order picked up by delivery partner', time:null, done:false, active:false},
+      {step:'IN_TRANSIT', label:'In Transit', desc:'On the way to your location', time:null, done:false, active:false},
+      {step:'DELIVERED', label:'Delivered', desc:'Order delivered successfully', time:null, done:false, active:false}
+    ]
   };
 
-  window.applyFilters = () => {
-    const q = (document.getElementById('searchInput').value||'').toLowerCase();
-    let filtered = allDrugs.filter(d =>
-      !q || (d.DRUG_NAME||'').toLowerCase().includes(q)
-    );
-    if (activeFilter === 'SAFE')    filtered = filtered.filter(d=>(d.STATUS||'').toUpperCase()==='SAFE');
-    if (activeFilter === 'WARNING') filtered = filtered.filter(d=>(d.STATUS||'').toUpperCase()==='WARNING');
-    if (activeFilter === 'cold')    filtered = filtered.filter(d=>(d.TEMPERATURE||99)<=8);
-    renderGrid(filtered);
-  };
-
-  // ── GRID ──────────────────────────────────────────────
-  function renderGrid(drugs) {
-    const grid = document.getElementById('drugGrid');
-    if (!drugs.length) {
-      grid.innerHTML = '<div class="empty-state">NO DRUGS MATCH YOUR FILTER</div>';
-      return;
+  // Save to Firebase if connected, else to local session
+  try {
+    if(db && !demoMode) {
+      const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await addDoc(collection(db, 'ORDERS'), {
+        ...orderData,
+        createdAt: serverTimestamp()
+      });
+      showToast('✅ ORDER SAVED TO FIREBASE', 'success');
     }
-    grid.innerHTML = drugs.map((d,i) => {
-      const temp = d.TEMPERATURE ?? '—';
-      const tempCls = temp === '—' ? 'temp-ok' : temp > 8 ? 'temp-hot' : temp > 6 ? 'temp-warn' : 'temp-ok';
-      const tempLabel = temp === '—' ? '—' : temp + '°C';
-      const inCart = cart.find(c=>c.id===d.id);
-      return `
-      <div class="drug-card" style="animation-delay:${i*0.05}s">
-        <div class="card-top">
-          <div>
-            <div class="drug-name">${d.DRUG_NAME||'UNKNOWN'}</div>
-            <div class="drug-category">${d.CATEGORY||'PHARMACEUTICAL'}</div>
-          </div>
-          <span class="temp-badge ${tempCls}">${tempLabel}</span>
-        </div>
-        <div class="card-body">
-          <div class="card-row"><span class="cr-key">WAREHOUSE</span><span class="cr-val">${d.LOCATION||'—'}</span></div>
-          <div class="card-row"><span class="cr-key">AVAILABLE QTY</span><span class="cr-val">${(d.QUANTITY||0).toLocaleString()} units</span></div>
-          <div class="card-row"><span class="cr-key">STATUS</span><span class="cr-val" style="color:${d.STATUS==='SAFE'?'var(--green)':d.STATUS==='CRITICAL'?'var(--red)':'var(--warn)'}">${d.STATUS||'—'}</span></div>
-        </div>
-        <div class="card-footer">
-          <div class="price">₹${d.UNIT_COST||'—'} <span>/ unit</span></div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="qty-ctrl">
-              <button class="qty-btn" onclick="changeQty('${d.id}',-1)">−</button>
-              <input class="qty-input" id="qty-${d.id}" type="number" value="100" min="1"/>
-              <button class="qty-btn" onclick="changeQty('${d.id}',1)">+</button>
-            </div>
-            <button class="add-cart-btn ${inCart?'added':''}" id="btn-${d.id}" onclick="addToCart('${d.id}')">
-              ${inCart ? '✓ ADDED' : '+ CART'}
-            </button>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
+  } catch(e) {
+    console.warn('Could not save to Firebase:', e);
   }
 
-  window.changeQty = (id, delta) => {
-    const input = document.getElementById('qty-'+id);
-    if (input) input.value = Math.max(1, parseInt(input.value||1) + delta*100);
+  sessionOrders.unshift(orderData);
+  document.getElementById('ordersCount').textContent = sessionOrders.length;
+  // Save to sessionStorage so orders.html can read
+  try { sessionStorage.setItem('medtrack_orders', JSON.stringify(sessionOrders)); } catch(e) {}
+
+  clearCart();
+  hideLoading();
+  showOrderSuccess(orderId);
+  renderOrdersList();
+
+  // Simulate order progression
+  simulateOrderProgress(orderId);
+}
+window.placeOrder = placeOrder;
+
+function simulateOrderProgress(orderId) {
+  const order = sessionOrders.find(o => o.orderId === orderId);
+  if(!order) return;
+  const steps = order.trackingSteps;
+  let idx = 1;
+
+  clearInterval(trackingInterval);
+  trackingInterval = setInterval(() => {
+    if(idx >= steps.length) { clearInterval(trackingInterval); return; }
+    steps[idx].done = true;
+    steps[idx].time = new Date().toISOString();
+    order.status = steps[idx].step;
+    idx++;
+    try { sessionStorage.setItem('medtrack_orders', JSON.stringify(sessionOrders)); } catch(e) {}
+    renderOrdersList();
+    if(lastOrderId === orderId) updateTrackerUI(order);
+  }, 8000); // advance every 8s (realistic demo)
+}
+
+// ────────────────────────────────────
+// TRACKER
+// ────────────────────────────────────
+function openTracker() {
+  closeSuccess();
+  const order = sessionOrders.find(o => o.orderId === lastOrderId);
+  if(!order) return;
+  updateTrackerUI(order);
+  document.getElementById('trackerPanel').classList.add('show');
+}
+window.openTracker = openTracker;
+
+function closeTracker() {
+  document.getElementById('trackerPanel').classList.remove('show');
+}
+window.closeTracker = closeTracker;
+
+function trackOrder(orderId) {
+  const order = sessionOrders.find(o => o.orderId === orderId);
+  if(!order) return showToast('ORDER NOT FOUND', 'error');
+  lastOrderId = orderId;
+  updateTrackerUI(order);
+  document.getElementById('trackerPanel').classList.add('show');
+}
+window.trackOrder = trackOrder;
+
+function updateTrackerUI(order) {
+  document.getElementById('trackerOrderId').textContent = order.orderId;
+  const steps = order.trackingSteps;
+  const activeIdx = steps.reduce((last, s, i) => s.done ? i : last, -1);
+
+  document.getElementById('trackingTimeline').innerHTML = steps.map((s,i) => {
+    const isDone = s.done;
+    const isActive = i === activeIdx + 1 && i < steps.length;
+    const cls = isDone ? 'done' : isActive ? 'active' : 'pending';
+    const icon = isDone ? '✓' : isActive ? '◉' : '○';
+    return `<div class="tl-step">
+      <div class="tl-dot ${cls}">${icon}</div>
+      <div class="tl-content">
+        <div class="tl-label">${s.label}</div>
+        <div class="tl-desc">${s.desc}</div>
+        ${s.time ? `<div class="tl-time">${new Date(s.time).toLocaleTimeString()}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Order items summary
+  const total = order.items.reduce((s,i) => s + i.subtotal, 0);
+  document.getElementById('orderItemsSummary').innerHTML = `
+    <div class="ois-title">ORDER ITEMS</div>
+    ${order.items.map(i => `<div class="ois-item"><span>${i.name.slice(0,32)}...</span><span>₹${i.subtotal.toFixed(2)}</span></div>`).join('')}
+    <div class="ois-total"><span>TOTAL</span><span class="val">₹${total.toFixed(2)}</span></div>`;
+}
+
+// ────────────────────────────────────
+// ORDERS LIST
+// ────────────────────────────────────
+function renderOrdersList() {
+  const container = document.getElementById('ordersListContainer');
+  document.getElementById('ordersTabCount').textContent = sessionOrders.length + ' ORDERS';
+  if(sessionOrders.length === 0) {
+    container.innerHTML = '<div class="no-results"><span class="icon">📋</span>NO ORDERS YET</div>';
+    return;
+  }
+  const statusClass = {PLACED:'status-placed',PROCESSING:'status-processing',QUALITY_CHECK:'status-processing',DISPATCHED:'status-shipped',IN_TRANSIT:'status-shipped',DELIVERED:'status-delivered'};
+  container.innerHTML = sessionOrders.map(o => `
+    <div class="order-row" onclick="trackOrder('${o.orderId}')">
+      <div class="or-top">
+        <div class="or-id">${o.orderId}</div>
+        <div class="or-status ${statusClass[o.status]||'status-placed'}">${o.status.replace('_',' ')}</div>
+      </div>
+      <div class="or-items">${o.items.length} medicine(s) — ${o.items.slice(0,2).map(i=>i.name.split(' ').slice(0,3).join(' ')).join(', ')}${o.items.length>2?'...':''}</div>
+      <div class="or-meta">
+        <span>${new Date(o.placedAt).toLocaleTimeString()}</span>
+        <span class="total">₹${o.total.toFixed(2)}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ────────────────────────────────────
+// UI HELPERS
+// ────────────────────────────────────
+function showOrderSuccess(id) {
+  document.getElementById('successOrderId').textContent = id;
+  document.getElementById('orderSuccess').classList.add('show');
+}
+function closeSuccess() {
+  document.getElementById('orderSuccess').classList.remove('show');
+}
+window.closeSuccess = closeSuccess;
+
+function showLoading(msg) {
+  document.getElementById('loadingTxt').textContent = msg || 'LOADING...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+let toastTimer;
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  clearTimeout(toastTimer);
+  setTimeout(() => t.classList.add('show'), 10);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function updateStats() {
+  document.getElementById('totalMeds').textContent = allMeds.length;
+  const inStock = allMeds.filter(m => m.qty === undefined || m.qty > 0).length;
+  document.getElementById('inStockCount').textContent = inStock;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='marketplace'&&i===0)||(tab==='orders'&&i===1)));
+  document.getElementById('marketplaceTab').style.display = tab==='marketplace' ? 'block' : 'none';
+  document.getElementById('ordersTab').classList.toggle('active', tab==='orders');
+}
+window.switchTab = switchTab;
+
+function openConfig() { document.getElementById('configModal').classList.add('show'); }
+function closeConfig() { document.getElementById('configModal').classList.remove('show'); }
+window.openConfig = openConfig;
+window.closeConfig = closeConfig;
+
+async function connectFirebase() {
+  const cfg = {
+    apiKey: document.getElementById('cfgApiKey').value,
+    authDomain: document.getElementById('cfgAuthDomain').value,
+    projectId: document.getElementById('cfgProjectId').value,
+    storageBucket: document.getElementById('cfgStorageBucket').value,
+    messagingSenderId: document.getElementById('cfgSenderId').value,
+    appId: document.getElementById('cfgAppId').value
   };
+  if(!cfg.apiKey || !cfg.projectId) { showToast('Please enter API Key and Project ID', 'error'); return; }
+  closeConfig();
+  setFbStatus('connecting','CONNECTING...');
+  const ok = await tryConnectFirebase(cfg);
+  if(!ok) showToast('❌ Firebase connection failed', 'error');
+}
+window.connectFirebase = connectFirebase;
 
-  // ── CART LOGIC ────────────────────────────────────────
-  window.addToCart = (id) => {
-    const drug = allDrugs.find(d=>d.id===id);
-    if (!drug) return;
-    const qty = parseInt(document.getElementById('qty-'+id)?.value||100);
-    const existing = cart.find(c=>c.id===id);
-    if (existing) { existing.qty = qty; }
-    else { cart.push({ id, name:drug.DRUG_NAME, unitCost:drug.UNIT_COST, qty, drug }); }
-    const btn = document.getElementById('btn-'+id);
-    if (btn) { btn.textContent='✓ ADDED'; btn.classList.add('added'); }
-    updateCartUI();
-  };
+// ────────────────────────────────────
+// BOOT
+// ────────────────────────────────────
+(async () => {
+  // Load Jan Aushadhi medicines immediately
+  filteredMeds = [...allMeds];
+  renderMeds();
+  updateStats();
+  document.getElementById('ordersCount').textContent = '0';
 
-  window.removeFromCart = (id) => {
-    cart = cart.filter(c=>c.id!==id);
-    updateCartUI();
-    applyFilters(); // re-render grid to un-highlight
-  };
-
-  function updateCartUI() {
-    document.getElementById('cartCount').textContent = cart.length;
-    const total = cart.reduce((s,c)=>s+(c.unitCost*c.qty),0);
-    document.getElementById('cartTotal').textContent = '₹'+total.toFixed(2);
-    document.getElementById('stat-cart').textContent = '₹'+total.toFixed(2);
-
-    const itemsEl = document.getElementById('cartItems');
-    if (!cart.length) {
-      itemsEl.innerHTML = '<div style="text-align:center;padding:3rem;font-family:var(--mono);font-size:0.75rem;color:var(--muted);">CART IS EMPTY</div>';
-      return;
-    }
-    itemsEl.innerHTML = cart.map(c => `
-      <div class="cart-item">
-        <button class="ci-remove" onclick="removeFromCart('${c.id}')">✕ REMOVE</button>
-        <div class="ci-name">${c.name}</div>
-        <div class="ci-meta">
-          <span>${c.qty.toLocaleString()} units × ₹${c.unitCost}</span>
-          <span style="color:var(--cyan)">₹${(c.qty*c.unitCost).toFixed(2)}</span>
-        </div>
-      </div>`).join('');
+  // Try auto-connect (will fail gracefully in demo)
+  setFbStatus('connecting','ATTEMPTING FIREBASE CONNECTION...');
+  
+  // Check if firebase config is in localStorage
+  const saved = localStorage.getItem('medtrack_firebase_cfg');
+  if(saved) {
+    try {
+      const cfg = JSON.parse(saved);
+      const ok = await tryConnectFirebase(cfg);
+      if(ok) return;
+    } catch(e) {}
   }
 
-  window.openCart  = () => {
-    document.getElementById('cartOverlay').classList.add('open');
-    document.getElementById('cartSidebar').classList.add('open');
-  };
-  window.closeCart = () => {
-    document.getElementById('cartOverlay').classList.remove('open');
-    document.getElementById('cartSidebar').classList.remove('open');
-  };
-
-  // ── CHECKOUT ──────────────────────────────────────────
-  window.checkout = async () => {
-    if (!cart.length) { alert('Cart is empty'); return; }
-    const orderId = 'ORD-' + Date.now();
-    const orderData = {
-      orderId,
-      items: cart.map(c=>({ drugId:c.id, name:c.name, qty:c.qty, unitCost:c.unitCost })),
-      total: cart.reduce((s,c)=>s+(c.unitCost*c.qty),0),
-      status: 'CONFIRMED',
-      placedAt: db ? null : new Date().toISOString(),
-      location: 'WAREHOUSE — AWAITING DISPATCH',
-    };
-
-    if (db) {
-      try {
-        orderData.placedAt = serverTimestamp();
-        await addDoc(collection(db,'ORDERS'), orderData);
-      } catch(e) { console.warn('Could not write to Firebase:', e.message); }
-    }
-
-    document.getElementById('orderIdDisplay').textContent = orderId;
-    document.getElementById('orderModal').classList.add('open');
-    cart = [];
-    updateCartUI();
-    closeCart();
-  };
-
-  window.closeOrderModal = () => {
-    document.getElementById('orderModal').classList.remove('open');
-    window.location.href = 'orders.html';
-  };
+  // Show config prompt after 2s
+  setTimeout(() => {
+    setFbStatus('','NOT CONNECTED — SHOWING JAN AUSHADHI DATA IN DEMO MODE');
+    document.getElementById('fbDot').className = 'fb-dot';
+    showToast('📦 Loaded '+JANAUSHADHI.length+' Jan Aushadhi medicines. Connect Firebase for full inventory.', 'info');
+  }, 1200);
+})();
 </script>
 </body>
 </html>

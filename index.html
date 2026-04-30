@@ -774,8 +774,9 @@
         ? new Date(d.TIMESTAMP.seconds * 1000).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false })
         : '—';
 
-      return `<tr>
-        <td><strong>${d.DRUG_NAME || '—'}</strong></td>
+     const isTransit = (d.STATUS||'').toUpperCase() === 'IN TRANSIT';
+return `<tr>
+  <td><strong>${d.DRUG_NAME || '—'}</strong></td>
         <td class="td-mono" title="${d.id}">${d.id.substring(0,12)}…</td>
         <td>${d.LOCATION || '—'}</td>
         <td>${d.TARGET_CLINIC || '—'}</td>
@@ -784,6 +785,15 @@
         <td class="td-mono">${(d.QUANTITY||0).toLocaleString()}</td>
         <td><span class="badge ${badgeClass}">${status}</span></td>
         <td class="td-mono" style="font-size:0.7rem;color:var(--text-muted)">${ts}</td>
+        <td>
+  <button 
+    onclick="shipBatch('${d.id}')"
+    class="pill-btn"
+    style="${isTransit ? 'opacity:0.3;pointer-events:none' : 'border-color:#2979ff;color:#2979ff'}"
+  >
+    ${isTransit ? '✈ SHIPPED' : '🚚 SHIP'}
+  </button>
+</td>
       </tr>`;
     }).join('');
   }

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>MedTrack — QR Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#07090f; --panel:#0d1220; --card:#111827; --border:#1e2d45; --cyan:#00e5ff; --muted:#546e8a; --mono:'Share Tech Mono',monospace; --sans:'Exo 2',sans-serif; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:#e8f4fd; font-family:var(--sans); padding:2rem; }
+    h1 { font-size:1.2rem; letter-spacing:3px; color:var(--cyan); margin-bottom:0.3rem; }
+    p  { font-size:0.75rem; color:var(--muted); margin-bottom:2rem; font-family:var(--mono); }
+    .cfg { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:1.5rem; max-width:500px; margin-bottom:2rem; }
+    label { font-family:var(--mono); font-size:0.6rem; letter-spacing:2px; color:var(--muted); display:block; margin-bottom:4px; margin-top:10px; }
+    input { width:100%; background:var(--panel); border:1px solid var(--border); color:#e8f4fd; font-family:var(--mono); font-size:0.75rem; padding:7px 10px; border-radius:2px; }
+    button { margin-top:1rem; width:100%; padding:12px; font-family:var(--mono); font-size:0.8rem; letter-spacing:3px; cursor:pointer; background:var(--cyan); color:#000; border:none; border-radius:2px; font-weight:700; }
+    .qr-grid { display:flex; flex-wrap:wrap; gap:1.5rem; }
+    .qr-item { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:1.2rem; text-align:center; width:200px; }
+    .qr-item canvas { border-radius:4px; }
+    .qr-name { font-size:0.75rem; font-weight:700; margin-top:0.8rem; color:var(--cyan); letter-spacing:1px; }
+    .qr-id   { font-family:var(--mono); font-size:0.55rem; color:var(--muted); margin-top:4px; word-break:break-all; }
+    .dl-btn  { margin-top:8px; font-family:var(--mono); font-size:0.6rem; padding:4px 10px; cursor:pointer; background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:2px; letter-spacing:1px; }
+    .dl-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+  </style>
+</head>
+<body>
+  <h1>MEDTRACK — QR CODE GENERATOR</h1>
+  <p>Generates a scannable QR code for each batch in your INVENTORY collection.</p>
+
+  <div class="cfg">
+    <label>API KEY</label><input id="g-apiKey" placeholder="AIzaSy..."/>
+    <label>PROJECT ID</label><input id="g-projectId" placeholder="your-project-id"/>
+    <label>AUTH DOMAIN</label><input id="g-authDomain" placeholder="your-app.firebaseapp.com"/>
+    <label>APP ID</label><input id="g-appId" placeholder="1:123:web:abc"/>
+    <button onclick="loadAndGenerate()">GENERATE QR CODES</button>
+  </div>
+
+  <div class="qr-grid" id="qrGrid"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  window.loadAndGenerate = async () => {
+    const cfg = {
+      apiKey:     document.getElementById('g-apiKey').value.trim(),
+      projectId:  document.getElementById('g-projectId').value.trim(),
+      authDomain: document.getElementById('g-authDomain').value.trim(),
+      appId:      document.getElementById('g-appId').value.trim(),
+    };
+    const app  = initializeApp(cfg, 'qrgen-' + Date.now());
+    const db   = getFirestore(app);
+    const snap = await getDocs(collection(db, 'INVENTORY'));
+    const grid = document.getElementById('qrGrid');
+    grid.innerHTML = '';
+
+    snap.docs.forEach(d => {
+      const data = d.data();
+      const item = document.createElement('div');
+      item.className = 'qr-item';
+
+      const canvas = document.createElement('canvas');
+      // QR encodes the Firestore Document ID
+      QRCode.toCanvas(canvas, d.id, { width: 160, margin: 1, color: { dark:'#00e5ff', light:'#111827' } });
+
+      const name = document.createElement('div');
+      name.className = 'qr-name';
+      name.textContent = data.DRUG_NAME || 'UNKNOWN';
+
+      const idEl = document.createElement('div');
+      idEl.className = 'qr-id';
+      idEl.textContent = d.id;
+
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'dl-btn';
+      dlBtn.textContent = '⬇ DOWNLOAD';
+      dlBtn.onclick = () => {
+        const a = document.createElement('a');
+        a.download = `QR_${data.DRUG_NAME || d.id}.png`;
+        a.href = canvas.toDataURL();
+        a.click();
+      };
+
+      item.append(canvas, name, idEl, dlBtn);
+      grid.appendChild(item);
+    });
+  };
+</script>
+</body>
+</html>

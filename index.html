@@ -891,6 +891,18 @@
     document.getElementById('tableBody').innerHTML =
       `<tr class="loading-row"><td colspan="9"><span class="spinner"></span> FETCHING FROM FIREBASE...</td></tr>`;
   }
+  window.shipBatch = async (docId) => {
+  if (!db) { alert('Connect Firebase first.'); return; }
+  const { doc, updateDoc, serverTimestamp } = await import(
+    "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+  );
+  await updateDoc(doc(db, 'INVENTORY', docId), {
+    STATUS: 'IN TRANSIT',
+    LOCATION: 'IN TRANSIT',
+    TIMESTAMP: serverTimestamp()
+  });
+  await loadFromFirebase(); // refresh table
+};
 </script>
 
 </body>

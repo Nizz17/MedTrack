@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MedTrack — Near-Expiry Sales</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #07090f; --bg-panel: #0d1220; --bg-card: #111827; --border: #1e2d45;
+  --accent-cyan: #00e5ff; --accent-blue: #2979ff; --accent-warn: #ffab00;
+  --accent-red: #ff1744; --accent-green: #00e676; --accent-sale: #e040fb;
+  --accent-sale-dim: rgba(224,64,251,0.15);
+  --text-primary: #e8f4fd; --text-muted: #546e8a; --text-dim: #2d4a6b;
+  --mono: 'Share Tech Mono', monospace; --sans: 'Exo 2', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg-deep); color: var(--text-primary); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(224,64,251,0.008) 2px, rgba(224,64,251,0.008) 4px); }
+
+header { display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 64px; background: var(--bg-panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent-sale), var(--accent-blue)); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 13px; font-weight: bold; color: #000; }
+.logo-text { font-size: 1.3rem; font-weight: 900; letter-spacing: 3px; color: var(--accent-sale); }
+.logo-sub { font-size: 0.6rem; letter-spacing: 4px; color: var(--text-muted); }
+.header-right { display: flex; align-items: center; gap: 1.5rem; }
+.clock { font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); }
+
+.nav-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; gap: 0; overflow-x: auto; }
+.nav-link { display: flex; align-items: center; gap: 8px; padding: 0 1.4rem; height: 46px; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 2px; color: var(--text-muted); text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+.nav-link:hover { color: var(--accent-cyan); }
+.nav-link.active { color: var(--accent-sale); border-bottom-color: var(--accent-sale); }
+.nav-badge { font-size: 0.55rem; padding: 1px 6px; border-radius: 10px; font-family: var(--sans); font-weight: 700; }
+.nav-badge.sale { background: var(--accent-sale); color: #fff; }
+.nav-badge.emergency { background: #ff6d00; color: #fff; animation: flash 1s infinite; }
+@keyframes flash { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+main { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+.section-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 4px; color: var(--accent-sale); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* === HERO BANNER === */
+.sale-hero {
+  background: linear-gradient(135deg, rgba(224,64,251,0.1) 0%, rgba(41,121,255,0.08) 100%);
+  border: 1px solid rgba(224,64,251,0.3); border-radius: 6px;
+  padding: 2rem; margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 2rem;
+}
+.sale-hero-icon { font-size: 4rem; }
+.sale-hero-text { flex: 1; }
+.sale-hero-title { font-size: 1.6rem; font-weight: 900; letter-spacing: 3px; color: var(--accent-sale); margin-bottom: 0.5rem; }
+.sale-hero-sub { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; max-width: 600px; }
+.sale-hero-tags { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+.sale-tag { font-family: var(--mono); font-size: 0.65rem; padding: 4px 12px; border-radius: 2px; border: 1px solid rgba(224,64,251,0.3); color: var(--accent-sale); background: rgba(224,64,251,0.08); }
+
+/* === SEARCH BAR === */
+.search-wrap { position: relative; margin-bottom: 2rem; }
+.search-input {
+  width: 100%; background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-primary); font-family: var(--mono); font-size: 0.9rem;
+  padding: 14px 50px 14px 20px; border-radius: 4px;
+  transition: border-color 0.2s; outline: none;
+}
+.search-input:focus { border-color: var(--accent-sale); }
+.search-input::placeholder { color: var(--text-dim); }
+.search-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; pointer-events: none; }
+.search-badge {
+  position: absolute; top: -10px; right: 12px;
+  background: var(--accent-sale); color: #fff;
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 1px;
+  padding: 2px 10px; border-radius: 2px;
+}
+
+/* === SALE RESULTS EXCLUSIVE === */
+.sale-exclusive-banner {
+  background: rgba(224,64,251,0.08); border: 1px solid rgba(224,64,251,0.3);
+  border-radius: 4px; padding: 0.8rem 1.2rem;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1rem; font-family: var(--mono); font-size: 0.75rem; color: var(--accent-sale);
+}
+
+/* === SALE GRID === */
+.sale-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-bottom: 2.5rem; }
+.sale-card {
+  background: var(--bg-card); border: 1px solid rgba(224,64,251,0.2); border-radius: 6px;
+  padding: 1.5rem; position: relative; overflow: hidden;
+  transition: all 0.3s; animation: fadeUp 0.4s ease both;
+}
+.sale-card:hover { border-color: var(--accent-sale); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(224,64,251,0.15); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.sale-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent-sale); }
+.sale-ribbon {
+  position: absolute; top: 16px; right: -8px;
+  background: var(--accent-sale); color: #fff;
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+  padding: 4px 16px 4px 12px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 8% 50%);
+}
+.sale-drug-name { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.4rem; padding-right: 60px; }
+.sale-clinic { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 1rem; font-family: var(--mono); }
+.sale-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
+.sale-info-item { background: rgba(255,255,255,0.03); border-radius: 3px; padding: 8px 10px; }
+.sale-info-label { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 3px; }
+.sale-info-val { font-family: var(--mono); font-size: 0.85rem; color: var(--text-primary); }
+.sale-info-val.expiry { color: var(--accent-warn); }
+.sale-info-val.expiry.urgent { color: var(--accent-red); }
+.sale-price-section { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; padding: 10px; background: rgba(224,64,251,0.05); border-radius: 3px; }
+.sale-price-new { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; color: var(--accent-sale); }
+.sale-price-old { font-family: var(--mono); font-size: 0.85rem; color: var(--text-muted); text-decoration: line-through; }
+.sale-savings { font-family: var(--mono); font-size: 0.65rem; color: var(--accent-green); background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.2); padding: 2px 8px; border-radius: 2px; margin-left: auto; }
+.expiry-bar-wrap { margin-bottom: 1rem; }
+.expiry-bar-label { font-family: var(--mono); font-size: 0.6rem; color: var(--text-muted); letter-spacing: 2px; margin-bottom: 5px; display: flex; justify-content: space-between; }
+.expiry-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.expiry-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+.expiry-fill.green { background: var(--accent-green); }
+.expiry-fill.warn { background: var(--accent-warn); }
+.expiry-fill.red { background: var(--accent-red); }
+.sale-actions { display: flex; gap: 0.5rem; }
+.btn-cart {
+  flex: 1; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px;
+  padding: 10px; border-radius: 2px; cursor: pointer;
+  background: var(--accent-sale); color: #fff; border: none;
+  font-weight: 700; transition: opacity 0.2s;
+}
+.btn-cart:hover { opacity: 0.85; }
+.btn-order-now {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px;
+  padding: 10px 14px; border-radius: 2px; cursor: pointer;
+  background: transparent; color: var(--accent-sale); border: 1px solid var(--accent-sale);
+  transition: all 0.2s;
+}
+.btn-order-now:hover { background: rgba(224,64,251,0.1); }
+
+/* === POST SALE FORM === */
+.post-sale-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 2rem; margin-bottom: 2.5rem; }
+.post-sale-title { font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 0.4rem; }
+.post-sale-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--text-muted); }
+.form-input, .form-select {
+  background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-primary);
+  font-family: var(--mono); font-size: 0.8rem; padding: 10px 12px; border-radius: 2px;
+  outline: none; transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus { border-color: var(--accent-sale); }
+.form-select { appearance: none; cursor: pointer; }
+.discount-preview {
+  background: rgba(224,64,251,0.08); border: 1px solid rgba(224,64,251,0.2);
+  border-radius: 4px; padding: 1rem; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.discount-preview-item { text-align: center; }
+.discount-preview-label { font-family: var(--mono); font-size: 0.6rem; color: var(--text-muted); letter-spacing: 2px; }
+.discount-preview-val { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; }
+.discount-preview-val.sale-col { color: var(--accent-sale); }
+.discount-preview-val.save-col { color: var(--accent-green); }
+.btn-list-sale {
+  font-family: var(--mono); font-size: 0.75rem; letter-spacing: 2px;
+  padding: 12px 28px; border-radius: 2px; cursor: pointer;
+  background: var(--accent-sale); color: #fff; border: none;
+  font-weight: 700; transition: opacity 0.2s;
+}
+.btn-list-sale:hover { opacity: 0.85; }
+
+/* === CART TOAST === */
+#cartToast {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 500;
+  background: var(--bg-panel); border: 1px solid var(--accent-sale);
+  border-radius: 4px; padding: 1rem 1.5rem;
+  display: none; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 0.75rem; color: var(--accent-sale);
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 8px 32px rgba(224,64,251,0.2);
+}
+@keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+@media (max-width: 900px) { .sale-grid { grid-template-columns: 1fr 1fr; } .form-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .sale-grid { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } main { padding: 1rem; } .sale-hero { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">🏷</div>
+    <div>
+      <div class="logo-text">NEAR-EXPIRY SALES</div>
+      <div class="logo-sub">MEDTRACK / SMART DISCOUNT ENGINE</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <a href="index.html" class="nav-link">🏠 DASHBOARD</a>
+  <a href="marketplace.html" class="nav-link">🛒 MARKETPLACE</a>
+  <a href="orders.html" class="nav-link">📋 ORDERS</a>
+  <a href="near-expiry.html" class="nav-link active">🏷️ EXPIRY SALES <span class="nav-badge sale">NEW</span></a>
+  <a href="emergency.html" class="nav-link">🚨 EMERGENCY <span class="nav-badge emergency">!</span></a>
+  <a href="qrgen.html" class="nav-link">📱 QR GEN</a>
+  <a href="scanner.html" class="nav-link">🔍 SCANNER</a>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <div class="sale-hero">
+    <div class="sale-hero-icon">🏷️</div>
+    <div class="sale-hero-text">
+      <div class="sale-hero-title">NEAR-EXPIRY DISCOUNT SYSTEM</div>
+      <div class="sale-hero-sub">Clinics can list medicines nearing expiry at 20–30% off. These discounted medicines appear exclusively at the top of search results when searched — reducing waste, saving money, and keeping supply chains healthy.</div>
+      <div class="sale-hero-tags">
+        <span class="sale-tag">🕐 WITHIN 30 DAYS</span>
+        <span class="sale-tag">💊 20–30% OFF</span>
+        <span class="sale-tag">🔍 EXCLUSIVE SEARCH HIGHLIGHT</span>
+        <span class="sale-tag">♻️ REDUCE WASTE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="section-label">// 01 &nbsp; SEARCH MEDICINES WITH SALE HIGHLIGHT</div>
+  <div class="search-wrap">
+    <span class="search-badge">🏷️ EXPIRY SALE EXCLUSIVE</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search medicine name... (e.g. Paracetamol, Insulin, Metformin)" oninput="handleSearch()">
+    <span class="search-icon">🔍</span>
+  </div>
+  <div id="searchResults"></div>
+
+  <!-- ALL SALE LISTINGS -->
+  <div class="section-label">// 02 &nbsp; ACTIVE NEAR-EXPIRY SALE LISTINGS</div>
+  <div class="sale-grid" id="saleGrid">
+    <!-- populated by JS -->
+  </div>
+
+  <!-- POST SALE FORM (for clinics) -->
+  <div class="section-label">// 03 &nbsp; LIST A NEAR-EXPIRY MEDICINE FOR SALE</div>
+  <div class="post-sale-section">
+    <div class="post-sale-title">🏪 CLINIC PORTAL — POST NEAR-EXPIRY ITEM</div>
+    <div class="post-sale-desc">List your near-expiry stock at a discount. It will appear exclusively highlighted in search results for that medicine across all hospitals and buyers.</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">MEDICINE NAME</label>
+        <input type="text" class="form-input" id="f-drug" placeholder="e.g. Paracetamol 500mg" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">CLINIC / PHARMACY NAME</label>
+        <input type="text" class="form-input" id="f-clinic" placeholder="e.g. Apollo Pharmacy, Delhi">
+      </div>
+      <div class="form-group">
+        <label class="form-label">EXPIRY DATE</label>
+        <input type="date" class="form-input" id="f-expiry" onchange="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ORIGINAL UNIT PRICE (₹)</label>
+        <input type="number" class="form-input" id="f-price" placeholder="e.g. 10.50" oninput="updatePreview()" step="0.01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">DISCOUNT (%)</label>
+        <select class="form-select" id="f-discount" onchange="updatePreview()">
+          <option value="20">20% OFF</option>
+          <option value="25">25% OFF</option>
+          <option value="30">30% OFF</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">QUANTITY AVAILABLE</label>
+        <input type="number" class="form-input" id="f-qty" placeholder="e.g. 500 units">
+      </div>
+    </div>
+    <div class="discount-preview" id="discountPreview">
+      <div class="discount-preview-item">
+        <div class="discount-preview-label">ORIGINAL PRICE</div>
+        <div class="discount-preview-val" id="prev-original">₹—</div>
+      </div>
+      <div style="color:var(--text-dim);font-size:1.5rem;">→</div>
+      <div class="discount-preview-item">
+        <div class="discount-preview-label">SALE PRICE</div>
+        <div class="discount-preview-val sale-col" id="prev-sale">₹—</div>
+      </div>
+      <div style="color:var(--text-dim);font-size:1.5rem;">|</div>
+      <div class="discount-preview-item">
+        <div class="discount-preview-label">BUYER SAVES</div>
+        <div class="discount-preview-val save-col" id="prev-save">₹—</div>
+      </div>
+    </div>
+    <button class="btn-list-sale" onclick="listSaleItem()">🏷️ LIST FOR SALE — PUBLISH TO SEARCH</button>
+  </div>
+
+</main>
+
+<div id="cartToast">🛒 Added to cart! <strong id="toastDrug"></strong></div>
+
+<script>
+// Clock
+setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN', { hour12: false }); }, 1000);
+
+// Demo sale data
+let saleItems = [
+  { id: 1, drug: 'METFORMIN 500MG', clinic: 'SUNRISE CLINIC, DELHI', expiry: daysFromNow(8), qty: 800, originalPrice: 5.00, discount: 25, location: 'Delhi' },
+  { id: 2, drug: 'PARACETAMOL 500MG', clinic: 'GOVT HOSPITAL PHARMACY, NELLORE', expiry: daysFromNow(15), qty: 5000, originalPrice: 2.00, discount: 30, location: 'Nellore' },
+  { id: 3, drug: 'CEFIXIME 200MG', clinic: 'APOLLO PHARMACY, DELHI', expiry: daysFromNow(12), qty: 500, originalPrice: 35.00, discount: 20, location: 'Delhi' },
+  { id: 4, drug: 'RANITIDINE 150MG', clinic: 'CITY MEDICAL, MUMBAI', expiry: daysFromNow(20), qty: 1200, originalPrice: 3.50, discount: 20, location: 'Mumbai' },
+  { id: 5, drug: 'AZITHROMYCIN 500MG', clinic: 'MAX PHARMACY, DELHI', expiry: daysFromNow(6), qty: 300, originalPrice: 80.00, discount: 30, location: 'Delhi' },
+  { id: 6, drug: 'CIPROFLOXACIN 500MG', clinic: 'MEDPLUS, HYDERABAD', expiry: daysFromNow(18), qty: 900, originalPrice: 12.00, discount: 25, location: 'Hyderabad' },
+];
+let cart = [];
+
+function daysFromNow(n) {
+  const d = new Date(); d.setDate(d.getDate() + n);
+  return d.toISOString().split('T')[0];
+}
+
+function daysLeft(expiryStr) {
+  return Math.ceil((new Date(expiryStr) - new Date()) / (1000 * 60 * 60 * 24));
+}
+
+function renderSaleGrid(items) {
+  const grid = document.getElementById('saleGrid');
+  if (!items.length) { grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);font-family:var(--mono)">NO SALE LISTINGS FOUND</div>`; return; }
+  grid.innerHTML = items.map((item, i) => {
+    const dl = daysLeft(item.expiry);
+    const salePrice = (item.originalPrice * (1 - item.discount / 100)).toFixed(2);
+    const savings = (item.originalPrice - salePrice).toFixed(2);
+    const expiryClass = dl <= 7 ? 'urgent' : '';
+    const barPct = Math.min(100, Math.max(5, dl / 30 * 100));
+    const barClass = dl <= 7 ? 'red' : dl <= 15 ? 'warn' : 'green';
+    return `<div class="sale-card" style="animation-delay:${i * 0.08}s">
+      <div class="sale-ribbon">${item.discount}% OFF</div>
+      <div class="sale-drug-name">${item.drug}</div>
+      <div class="sale-clinic">📍 ${item.clinic}</div>
+      <div class="sale-info-grid">
+        <div class="sale-info-item"><div class="sale-info-label">QTY AVAILABLE</div><div class="sale-info-val">${item.qty.toLocaleString()} units</div></div>
+        <div class="sale-info-item"><div class="sale-info-label">EXPIRY DATE</div><div class="sale-info-val expiry ${expiryClass}">${item.expiry} <span style="font-size:0.7rem">(${dl}d)</span></div></div>
+      </div>
+      <div class="expiry-bar-wrap">
+        <div class="expiry-bar-label"><span>TIME REMAINING</span><span style="color:${dl<=7?'var(--accent-red)':'var(--accent-warn)'}">${dl} DAYS</span></div>
+        <div class="expiry-bar"><div class="expiry-fill ${barClass}" style="width:${barPct}%"></div></div>
+      </div>
+      <div class="sale-price-section">
+        <div>
+          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:2px;margin-bottom:2px">SALE PRICE</div>
+          <div class="sale-price-new">₹${salePrice}</div>
+          <div class="sale-price-old">₹${item.originalPrice.toFixed(2)}</div>
+        </div>
+        <div class="sale-savings">SAVE ₹${savings}</div>
+      </div>
+      <div class="sale-actions">
+        <button class="btn-cart" onclick="addToCart(${item.id}, '${item.drug}')">🛒 ADD TO CART</button>
+        <button class="btn-order-now" onclick="orderNow(${item.id})">⚡ ORDER NOW</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function handleSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const resultsDiv = document.getElementById('searchResults');
+  if (!q) { resultsDiv.innerHTML = ''; renderSaleGrid(saleItems); return; }
+
+  const matching = saleItems.filter(i => i.drug.toLowerCase().includes(q));
+  const nonSaleMsg = q.length > 2 ? `<div style="font-family:var(--mono);font-size:0.75rem;color:var(--text-muted);padding:0.5rem 0">Also check <a href="marketplace.html" style="color:var(--accent-cyan)">Marketplace</a> for regular-priced stock</div>` : '';
+
+  if (matching.length) {
+    resultsDiv.innerHTML = `
+      <div class="sale-exclusive-banner">
+        🏷️ &nbsp; NEAR-EXPIRY SALE RESULTS — Showing <strong style="color:#fff">${matching.length} discounted listing${matching.length!==1?'s':''}</strong> for "<strong style="color:#fff">${q}</strong>" — These appear exclusively above regular search results
+      </div>`;
+    renderSaleGrid(matching);
+  } else {
+    resultsDiv.innerHTML = `
+      <div class="sale-exclusive-banner" style="border-color:rgba(255,171,0,0.3);color:var(--accent-warn)">
+        🔍 &nbsp; No near-expiry sale listings found for "<strong style="color:#fff">${q}</strong>" — showing all available sales below
+      </div>`;
+    renderSaleGrid(saleItems);
+  }
+}
+
+function addToCart(id, drug) {
+  cart.push(id);
+  const toast = document.getElementById('cartToast');
+  document.getElementById('toastDrug').textContent = drug;
+  toast.style.display = 'flex';
+  setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+function orderNow(id) {
+  alert('Order placed! The clinic will be notified. Estimated delivery: 2–4 hours.\n\nCheck Orders page for tracking.');
+}
+
+function updatePreview() {
+  const price = parseFloat(document.getElementById('f-price').value) || 0;
+  const discount = parseInt(document.getElementById('f-discount').value) || 20;
+  const salePrice = price * (1 - discount / 100);
+  const save = price - salePrice;
+  document.getElementById('prev-original').textContent = price ? `₹${price.toFixed(2)}` : '₹—';
+  document.getElementById('prev-sale').textContent = price ? `₹${salePrice.toFixed(2)}` : '₹—';
+  document.getElementById('prev-save').textContent = price ? `₹${save.toFixed(2)}` : '₹—';
+}
+
+function listSaleItem() {
+  const drug = document.getElementById('f-drug').value.trim();
+  const clinic = document.getElementById('f-clinic').value.trim();
+  const expiry = document.getElementById('f-expiry').value;
+  const price = parseFloat(document.getElementById('f-price').value);
+  const discount = parseInt(document.getElementById('f-discount').value);
+  const qty = parseInt(document.getElementById('f-qty').value);
+
+  if (!drug || !clinic || !expiry || !price || !qty) { alert('Please fill all fields before listing.'); return; }
+  const dl = daysLeft(expiry);
+  if (dl > 30) { alert('Only medicines expiring within 30 days can be listed on sale.'); return; }
+
+  const newItem = { id: Date.now(), drug: drug.toUpperCase(), clinic: clinic.toUpperCase(), expiry, qty, originalPrice: price, discount, location: 'Your Location' };
+  saleItems.unshift(newItem);
+  renderSaleGrid(saleItems);
+  alert(`✅ "${drug}" listed at ${discount}% off!\nIt will now appear exclusively highlighted in search results.`);
+  document.getElementById('f-drug').value = '';
+  document.getElementById('f-clinic').value = '';
+  document.getElementById('f-expiry').value = '';
+  document.getElementById('f-price').value = '';
+  document.getElementById('f-qty').value = '';
+  updatePreview();
+}
+
+// Initial render
+renderSaleGrid(saleItems);
+
+// Set min date for expiry field (today)
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('f-expiry').setAttribute('min', today);
+document.getElementById('f-expiry').setAttribute('max', daysFromNow(30));
+</script>
+</body>
+</html>

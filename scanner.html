@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MedTrack — QR Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090f; --panel: #0d1220; --card: #111827;
+      --border: #1e2d45; --cyan: #00e5ff; --green: #00e676;
+      --red: #ff1744; --warn: #ffab00; --muted: #546e8a;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Exo 2', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: #e8f4fd; font-family: var(--sans); min-height: 100vh; }
+
+    header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 2rem; height: 64px;
+      background: var(--panel); border-bottom: 1px solid var(--border);
+    }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--cyan), #2979ff);
+      clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 12px; color: #000; font-weight: bold;
+    }
+    .logo-text { font-size: 1.2rem; font-weight: 900; letter-spacing: 3px; color: var(--cyan); }
+
+    main { max-width: 600px; margin: 3rem auto; padding: 1rem; }
+
+    .section-label {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 4px;
+      color: var(--cyan); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    #scanner-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 4px; overflow: hidden; margin-bottom: 1.5rem;
+    }
+    #reader { width: 100%; }
+
+    .btn-primary {
+      width: 100%; padding: 14px; font-family: var(--mono);
+      font-size: 0.85rem; letter-spacing: 3px; cursor: pointer;
+      background: var(--cyan); color: #000; border: none;
+      border-radius: 2px; font-weight: 700; transition: opacity 0.2s;
+      margin-bottom: 1rem;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-stop {
+      width: 100%; padding: 14px; font-family: var(--mono);
+      font-size: 0.85rem; letter-spacing: 3px; cursor: pointer;
+      background: transparent; color: var(--red);
+      border: 1px solid var(--red); border-radius: 2px;
+      margin-bottom: 1.5rem; display: none;
+    }
+
+    #result-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 4px; padding: 1.5rem; display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    .result-drug {
+      font-size: 1.8rem; font-weight: 900; color: var(--cyan);
+      letter-spacing: 2px; margin-bottom: 1rem;
+    }
+    .result-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid rgba(30,45,69,0.5);
+      font-size: 0.82rem;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .rk { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px; }
+    .rv { font-family: var(--mono); font-size: 0.78rem; }
+
+    .badge {
+      display: inline-block; font-family: var(--mono); font-size: 0.65rem;
+      padding: 3px 10px; border-radius: 2px; letter-spacing: 1px; font-weight: 700;
+    }
+    .safe     { color: var(--green); background: rgba(0,230,118,0.1);  border: 1px solid rgba(0,230,118,0.3); }
+    .critical { color: var(--red);   background: rgba(255,23,68,0.1);  border: 1px solid rgba(255,23,68,0.3); }
+    .warning  { color: var(--warn);  background: rgba(255,171,0,0.1);  border: 1px solid rgba(255,171,0,0.3); }
+
+    #status-msg {
+      font-family: var(--mono); font-size: 0.75rem;
+      color: var(--muted); text-align: center;
+      padding: 1rem; letter-spacing: 2px;
+    }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 2rem;
+      font-family: var(--mono); font-size: 0.7rem; letter-spacing: 2px;
+      color: var(--muted); text-decoration: none;
+    }
+    .back-link:hover { color: var(--cyan); }
+
+    /* Config fields */
+    .cfg-row { margin-bottom: 10px; }
+    .cfg-row label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--muted); display: block; margin-bottom: 4px; }
+    .cfg-row input {
+      width: 100%; background: var(--panel); border: 1px solid var(--border);
+      color: #e8f4fd; font-family: var(--mono); font-size: 0.75rem;
+      padding: 7px 10px; border-radius: 2px;
+    }
+    .cfg-row input:focus { outline: none; border-color: var(--cyan); }
+    #cfg-section { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .cfg-title { font-size: 0.7rem; letter-spacing: 3px; color: var(--muted); margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">MT</div>
+  <div>
+    <div class="logo-text">MEDTRACK</div>
+  </div>
+</header>
+
+<main>
+  <div class="section-label">// QR BATCH SCANNER</div>
+
+  <!-- Firebase Config (reuse from dashboard) -->
+  <div id="cfg-section">
+    <div class="cfg-title">FIREBASE CONFIG</div>
+    <div class="cfg-row"><label>API KEY</label><input id="s-apiKey" placeholder="AIzaSy..."/></div>
+    <div class="cfg-row"><label>PROJECT ID</label><input id="s-projectId" placeholder="your-project-id"/></div>
+    <div class="cfg-row"><label>AUTH DOMAIN</label><input id="s-authDomain" placeholder="your-app.firebaseapp.com"/></div>
+    <div class="cfg-row"><label>APP ID</label><input id="s-appId" placeholder="1:123:web:abc"/></div>
+    <button class="btn-primary" onclick="initDB()">CONNECT & START SCANNER</button>
+  </div>
+
+  <div id="scanner-box">
+    <div id="reader"></div>
+  </div>
+  <button class="btn-stop" id="stopBtn" onclick="stopScanner()">■ STOP CAMERA</button>
+
+  <div id="status-msg">CONNECT FIREBASE ABOVE TO BEGIN</div>
+
+  <div id="result-card">
+    <div class="result-drug" id="r-drug">—</div>
+    <div class="result-row"><span class="rk">BATCH ID</span><span class="rv" id="r-id">—</span></div>
+    <div class="result-row"><span class="rk">LOCATION</span><span class="rv" id="r-loc">—</span></div>
+    <div class="result-row"><span class="rk">TARGET CLINIC</span><span class="rv" id="r-target">—</span></div>
+    <div class="result-row"><span class="rk">TEMPERATURE</span><span class="rv" id="r-temp">—</span></div>
+    <div class="result-row"><span class="rk">QUANTITY</span><span class="rv" id="r-qty">—</span></div>
+    <div class="result-row"><span class="rk">UNIT COST</span><span class="rv" id="r-cost">—</span></div>
+    <div class="result-row"><span class="rk">STATUS</span><span class="rv" id="r-status">—</span></div>
+  </div>
+
+  <a class="back-link" href="index.html">← BACK TO DASHBOARD</a>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  let db = null;
+  let scanner = null;
+
+  window.initDB = async () => {
+    const cfg = {
+      apiKey:     document.getElementById('s-apiKey').value.trim(),
+      projectId:  document.getElementById('s-projectId').value.trim(),
+      authDomain: document.getElementById('s-authDomain').value.trim(),
+      appId:      document.getElementById('s-appId').value.trim(),
+    };
+    if (!cfg.apiKey || !cfg.projectId) { alert('Enter API Key and Project ID'); return; }
+    const app = initializeApp(cfg, 'scanner-' + Date.now());
+    db = getFirestore(app);
+    document.getElementById('cfg-section').style.display = 'none';
+    startScanner();
+  };
+
+  function startScanner() {
+    document.getElementById('status-msg').textContent = 'POINT CAMERA AT A MEDTRACK QR CODE...';
+    document.getElementById('stopBtn').style.display = 'block';
+
+    scanner = new Html5Qrcode("reader");
+    scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSuccess,
+      () => {}
+    );
+  }
+
+  window.stopScanner = () => {
+    if (scanner) scanner.stop();
+    document.getElementById('stopBtn').style.display = 'none';
+    document.getElementById('status-msg').textContent = 'SCANNER STOPPED';
+  };
+
+  async function onScanSuccess(docId) {
+    scanner.pause();
+    document.getElementById('status-msg').textContent = 'FETCHING: ' + docId;
+
+    try {
+      const snap = await getDoc(doc(db, 'INVENTORY', docId));
+      if (!snap.exists()) {
+        document.getElementById('status-msg').textContent = 'NO RECORD FOUND FOR: ' + docId;
+        setTimeout(() => scanner.resume(), 2000);
+        return;
+      }
+      const d = snap.data();
+      showResult(docId, d);
+    } catch (e) {
+      document.getElementById('status-msg').textContent = 'ERROR: ' + e.message;
+      setTimeout(() => scanner.resume(), 3000);
+    }
+  }
+
+  function showResult(id, d) {
+    document.getElementById('status-msg').textContent = '✅ BATCH FOUND';
+    document.getElementById('result-card').style.display = 'block';
+
+    document.getElementById('r-drug').textContent   = d.DRUG_NAME || '—';
+    document.getElementById('r-id').textContent     = id;
+    document.getElementById('r-loc').textContent    = d.LOCATION || '—';
+    document.getElementById('r-target').textContent = d.TARGET_CLINIC || '—';
+    document.getElementById('r-temp').textContent   = d.TEMPERATURE != null ? d.TEMPERATURE + '°C' : '—';
+    document.getElementById('r-qty').textContent    = (d.QUANTITY||0).toLocaleString() + ' units';
+    document.getElementById('r-cost').textContent   = '₹' + (d.UNIT_COST || '—');
+
+    const status = (d.STATUS||'UNKNOWN').toUpperCase();
+    const cls    = status === 'SAFE' ? 'safe' : status === 'CRITICAL' ? 'critical' : 'warning';
+    document.getElementById('r-status').innerHTML = `<span class="badge ${cls}">${status}</span>`;
+  }
+</script>
+</body>
+</html>
